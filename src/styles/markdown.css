@@ -20,17 +20,23 @@
     }
 
     a:not(.no-styling) {
-        @apply relative bg-none link font-medium text-[var(--primary)]
-        underline decoration-[var(--link-underline)] decoration-1 decoration-dashed underline-offset-4;
+        @apply relative bg-none link font-medium;
+        color: var(--cyber-cyan);
+        text-decoration-color: var(--cyber-cyan);
+        text-decoration: underline;
+        text-decoration-style: dashed;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
         box-decoration-break: clone;
         -webkit-box-decoration-break: clone;
         display: inline-block;
     
         &:hover, &:active {
-            @apply decoration-transparent;
+            text-decoration-color: transparent;
             background: var(--btn-plain-bg-hover);
-            border-bottom: 1px dashed var(--link-hover);
+            border-bottom: 1px dashed var(--cyber-pink);
             text-decoration: none;
+            color: var(--cyber-pink);
         }
     }
 
@@ -93,7 +99,7 @@
 
     ul, ol {
         li::marker {
-            @apply text-[var(--primary)];
+            color: var(--cyber-cyan);
         }
     }
 
@@ -102,7 +108,8 @@
         font-weight: inherit;
 
         &:before {
-            @apply content-[''] absolute -left-1 block transition bg-[var(--btn-regular-bg)] h-full w-1 rounded-full;
+            @apply content-[''] absolute -left-1 block transition h-full w-1 rounded-full;
+            background: linear-gradient(to bottom, var(--cyber-cyan), var(--cyber-purple));
         }
 
         /* Remove the double quotes from default styles */

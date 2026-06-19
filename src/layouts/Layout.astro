@@ -4,6 +4,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
+import BrightnessControl from "@components/BrightnessControl.astro";
 import { profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
@@ -109,24 +110,10 @@ const bannerOffset =
 			/>
 		))}
 
-		<!-- Set the theme before the page is rendered to avoid a flash -->
+		<!-- Force dark mode always -->
 		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
-			// Load the theme from local storage
-			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
-			switch (theme) {
-				case LIGHT_MODE:
-					document.documentElement.classList.remove('dark');
-					break
-				case DARK_MODE:
-					document.documentElement.classList.add('dark');
-					break
-				case AUTO_MODE:
-					if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-						document.documentElement.classList.add('dark');
-					} else {
-						document.documentElement.classList.remove('dark');
-					}
-			}
+			// Always use dark mode
+			document.documentElement.classList.add('dark');
 
 			// Load the hue from local storage
 			const hue = localStorage.getItem('hue') || configHue;
@@ -151,6 +138,15 @@ const bannerOffset =
 	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
 	>
+		<!-- Cyber Scanline Effect -->
+		<div class="scanline"></div>
+
+		<!-- Cyber Particles -->
+		<div id="cyber-particles"></div>
+
+		<!-- Brightness Control -->
+		<BrightnessControl></BrightnessControl>
+
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
 
@@ -272,14 +268,13 @@ function setClickOutsideToClose(panel: string, ignores: string[]) {
 		panelDom!.classList.add("float-panel-closed");
 	});
 }
-setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
 setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
 setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
 
 
 function loadTheme() {
-	const theme = getStoredTheme()
-	setTheme(theme)
+	// Always dark mode
+	document.documentElement.classList.add('dark');
 }
 
 function loadHue() {
@@ -564,4 +559,35 @@ if (window.swup) {
 } else {
 	document.addEventListener("swup:enable", setup)
 }
+</script>
+
+<script is:inline>
+// Cyber Particle System
+(function() {
+	const container = document.getElementById('cyber-particles');
+	if (!container) return;
+
+	const colors = ['#FF0066', '#00C8FF', '#FFC800', '#8A2BE2', '#00FF88', '#FF00FF', '#E60012'];
+	const particleCount = 40;
+
+	for (let i = 0; i < particleCount; i++) {
+		const p = document.createElement('div');
+		p.className = 'cyber-particle';
+		const color = colors[Math.floor(Math.random() * colors.length)];
+		const size = 2 + Math.random() * 3;
+		const duration = 10 + Math.random() * 15;
+		const delay = Math.random() * 10;
+
+		p.style.cssText = `
+			left: ${Math.random() * 100}%;
+			width: ${size}px;
+			height: ${size}px;
+			background: ${color};
+			box-shadow: 0 0 ${6 + Math.random() * 8}px ${color};
+			animation-duration: ${duration}s;
+			animation-delay: ${delay}s;
+		`;
+		container.appendChild(p);
+	}
+})();
 </script>

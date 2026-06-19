@@ -5,10 +5,39 @@ white(a)
 black(a)
   rgba(0, 0, 0, a)
 
-rainbow-light = linear-gradient(to right, oklch(0.80 0.10 0), oklch(0.80 0.10 30), oklch(0.80 0.10 60), oklch(0.80 0.10 90), oklch(0.80 0.10 120), oklch(0.80 0.10 150), oklch(0.80 0.10 180), oklch(0.80 0.10 210), oklch(0.80 0.10 240), oklch(0.80 0.10 270), oklch(0.80 0.10 300), oklch(0.80 0.10 330), oklch(0.80 0.10 360))
-rainbow-dark = linear-gradient(to right, oklch(0.70 0.10 0), oklch(0.70 0.10 30), oklch(0.70 0.10 60), oklch(0.70 0.10 90), oklch(0.70 0.10 120), oklch(0.70 0.10 150), oklch(0.70 0.10 180), oklch(0.70 0.10 210), oklch(0.70 0.10 240), oklch(0.70 0.10 270), oklch(0.70 0.10 300), oklch(0.70 0.10 330), oklch(0.70 0.10 360))
-
+/* Cyber Guofeng Color Palette */
 :root
+  /* Core brand colors */
+  --cyber-cyan: #00C8FF
+  --cyber-pink: #FF0066
+  --cyber-gold: #FFC800
+  --cyber-purple: #8A2BE2
+  --cyber-green: #00FF88
+  --cyber-red: #E60012
+  --cyber-magenta: #FF00FF
+  --cyber-blue: #0066FF
+  --cyber-orange: #FF6600
+
+  /* Background colors */
+  --bg-deep: #050510
+  --bg-dark: #0a0a20
+  --bg-card: rgba(10, 10, 30, 0.6)
+  --bg-card-hover: rgba(15, 15, 40, 0.8)
+  --bg-glass: rgba(10, 10, 30, 0.7)
+
+  /* Gradient definitions */
+  --gradient-primary: linear-gradient(135deg, #FF0066, #FF6600, #FFC800)
+  --gradient-cyber: linear-gradient(135deg, #00C8FF, #00FF88)
+  --gradient-warm: linear-gradient(135deg, #FF0066, #FFC800)
+  --gradient-cool: linear-gradient(135deg, #8A2BE2, #00C8FF)
+  --gradient-hero: linear-gradient(135deg, #ff0066, #ff6600, #ffcc00, #00ff88, #00ccff, #aa44ff, #ff0066)
+
+  /* Glow effects */
+  --glow-cyan: 0 0 20px rgba(0, 200, 255, 0.3)
+  --glow-pink: 0 0 20px rgba(255, 0, 102, 0.3)
+  --glow-gold: 0 0 20px rgba(255, 200, 0, 0.3)
+  --glow-purple: 0 0 20px rgba(138, 43, 226, 0.3)
+
   --radius-large 1rem
   --content-delay 150ms
 
@@ -23,76 +52,94 @@ define(vars)
         {key}: value[1]
 
 define({
-  --primary: oklch(0.70 0.14 var(--hue)) oklch(0.75 0.14 var(--hue))
-  --page-bg: oklch(0.95 0.01 var(--hue)) oklch(0.16 0.014 var(--hue))
-  --card-bg: white oklch(0.23 0.015 var(--hue))
+  /* Primary accent - cyber cyan */
+  --primary: #00C8FF #00C8FF
 
-  --btn-content: oklch(0.55 0.12 var(--hue)) oklch(0.75 0.1 var(--hue))
+  /* Page background - deep dark with subtle blue */
+  --page-bg: #f8f8fc #050510
 
-  --btn-regular-bg: oklch(0.95 0.025 var(--hue)) oklch(0.33 0.035 var(--hue))
-  --btn-regular-bg-hover: oklch(0.9 0.05 var(--hue)) oklch(0.38 0.04 var(--hue))
-  --btn-regular-bg-active: oklch(0.85 0.08 var(--hue)) oklch(0.43 0.045 var(--hue))
+  /* Card background - glassmorphism */
+  --card-bg: rgba(255,255,255,0.95) rgba(10,10,30,0.6)
 
-  --btn-plain-bg-hover: oklch(0.95 0.025 var(--hue)) oklch(0.30 0.035 var(--hue))
-  --btn-plain-bg-active: oklch(0.98 0.01 var(--hue)) oklch(0.27 0.025 var(--hue))
+  /* Button content */
+  --btn-content: #00C8FF #00C8FF
 
-  --btn-card-bg-hover: oklch(0.98 0.005 var(--hue)) oklch(0.3 0.03 var(--hue))
-  --btn-card-bg-active: oklch(0.9 0.03 var(--hue)) oklch(0.35 0.035 var(--hue))
+  /* Button regular */
+  --btn-regular-bg: rgba(0,200,255,0.08) rgba(0,200,255,0.12)
+  --btn-regular-bg-hover: rgba(0,200,255,0.15) rgba(0,200,255,0.2)
+  --btn-regular-bg-active: rgba(0,200,255,0.22) rgba(0,200,255,0.28)
+
+  /* Button plain */
+  --btn-plain-bg-hover: rgba(0,200,255,0.06) rgba(0,200,255,0.1)
+  --btn-plain-bg-active: rgba(0,200,255,0.1) rgba(0,200,255,0.15)
+
+  /* Button card */
+  --btn-card-bg-hover: rgba(0,200,255,0.06) rgba(0,200,255,0.1)
+  --btn-card-bg-active: rgba(0,200,255,0.1) rgba(0,200,255,0.15)
 
   --enter-btn-bg: var(--btn-regular-bg)
   --enter-btn-bg-hover: var(--btn-regular-bg-hover)
   --enter-btn-bg-active: var(--btn-regular-bg-active)
 
-  --deep-text: oklch(0.25 0.02 var(--hue))
+  /* Deep text */
+  --deep-text: #1a1a2e #e0e0f0
 
-  --title-active: oklch(0.6 0.1 var(--hue))
+  /* Title active */
+  --title-active: #FF0066 #FF0066
 
-  --line-divider: black(0.08) white(0.08)
+  /* Dividers */
+  --line-divider: rgba(0,0,0,0.06) rgba(255,255,255,0.06)
+  --line-color: rgba(0,0,0,0.08) rgba(255,255,255,0.08)
+  --meta-divider: rgba(0,0,0,0.15) rgba(255,255,255,0.15)
 
-  --line-color: black(0.1) white(0.1)
-  --meta-divider: black(0.2) white(0.2)
+  /* Inline code */
+  --inline-code-bg: rgba(0,200,255,0.1) rgba(0,200,255,0.15)
+  --inline-code-color: #00C8FF #00C8FF
+  --selection-bg: rgba(0,200,255,0.2) rgba(0,200,255,0.3)
+  --codeblock-selection: rgba(0,200,255,0.3)
+  --codeblock-bg: #0a0a1a #0a0a1a
+  --codeblock-topbar-bg: #12122a #0d0d20
 
-  --inline-code-bg: var(--btn-regular-bg)
-  --inline-code-color: var(--btn-content)
-  --selection-bg: oklch(0.90 0.05 var(--hue)) oklch(0.40 0.08 var(--hue))
-  --codeblock-selection: oklch(0.40 0.08 var(--hue))
-  --codeblock-bg: oklch(0.17 0.015 var(--hue)) oklch(0.17 0.015 var(--hue))
-  --codeblock-topbar-bg: oklch(0.3 0.02 var(--hue)) oklch(0.12 0.015 var(--hue))
+  --license-block-bg: rgba(0,0,0,0.02) var(--codeblock-bg)
 
-  --license-block-bg: black(0.03) var(--codeblock-bg)
+  /* Links */
+  --link-underline: #00C8FF #00C8FF
+  --link-hover: #FF0066 #FF0066
+  --link-active: #FFC800 #FFC800
 
-  --link-underline: oklch(0.93 0.04 var(--hue)) oklch(0.40 0.08 var(--hue))
-  --link-hover: oklch(0.95 0.025 var(--hue)) oklch(0.40 0.08 var(--hue))
-  --link-active: oklch(0.90 0.05 var(--hue)) oklch(0.35 0.07 var(--hue))
+  /* Float panel */
+  --float-panel-bg: rgba(255,255,255,0.95) rgba(10,10,30,0.85)
 
-  --float-panel-bg: white oklch(0.19 0.015 var(--hue))
+  /* Scrollbar */
+  --scrollbar-bg-light: rgba(0,0,0,0.3)
+  --scrollbar-bg-hover-light: rgba(0,0,0,0.4)
+  --scrollbar-bg-active-light: rgba(0,0,0,0.5)
 
-  --scrollbar-bg-light: black(0.4)
-  --scrollbar-bg-hover-light: black(0.5)
-  --scrollbar-bg-active-light: black(0.6)
-
-  --scrollbar-bg-dark: white(0.4)
-  --scrollbar-bg-hover-dark: white(0.5)
-  --scrollbar-bg-active-dark: white(0.6)
+  --scrollbar-bg-dark: rgba(0,200,255,0.3)
+  --scrollbar-bg-hover-dark: rgba(0,200,255,0.4)
+  --scrollbar-bg-active-dark: rgba(0,200,255,0.5)
 
   --scrollbar-bg: var(--scrollbar-bg-light) var(--scrollbar-bg-dark)
   --scrollbar-bg-hover: var(--scrollbar-bg-hover-light) var(--scrollbar-bg-hover-dark)
   --scrollbar-bg-active: var(--scrollbar-bg-active-light) var(--scrollbar-bg-active-dark)
 
-  --color-selection-bar: rainbow-light rainbow-dark
+  /* Selection bar - rainbow */
+  --color-selection-bar: linear-gradient(to right, #FF0066, #FF6600, #FFC800, #00FF88, #00C8FF, #8A2BE2, #FF00FF) linear-gradient(to right, #FF0066, #FF6600, #FFC800, #00FF88, #00C8FF, #8A2BE2, #FF00FF)
 
   --display-light-icon: 1 0
   --display-dark-icon: 0 1
 
-  --admonitions-color-tip: oklch(0.7 0.14 180) oklch(0.75 0.14 180)
-  --admonitions-color-note: oklch(0.7 0.14 250) oklch(0.75 0.14 250)
-  --admonitions-color-important: oklch(0.7 0.14 310) oklch(0.75 0.14 310)
-  --admonitions-color-warning: oklch(0.7 0.14 60) oklch(0.75 0.14 60)
-  --admonitions-color-caution: oklch(0.6 0.2 25) oklch(0.65 0.2 25)
+  /* Admonitions - multi-color */
+  --admonitions-color-tip: #00FF88 #00FF88
+  --admonitions-color-note: #00C8FF #00C8FF
+  --admonitions-color-important: #8A2BE2 #8A2BE2
+  --admonitions-color-warning: #FFC800 #FFC800
+  --admonitions-color-caution: #FF0066 #FF0066
 
-  --toc-badge-bg: oklch(0.89 0.050 var(--hue)) var(--btn-regular-bg)
-  --toc-btn-hover: oklch(0.926 0.015 var(--hue)) oklch(0.22 0.02 var(--hue))
-  --toc-btn-active: oklch(0.90 0.015 var(--hue)) oklch(0.25 0.02 var(--hue))
+  /* TOC */
+  --toc-badge-bg: rgba(0,200,255,0.1) var(--btn-regular-bg)
+  --toc-btn-hover: rgba(0,200,255,0.08) rgba(0,200,255,0.12)
+  --toc-btn-active: rgba(0,200,255,0.12) rgba(0,200,255,0.18)
   --toc-width: calc((100vw - var(--page-width)) / 2 - 1rem)
-  --toc-item-active: oklch(0.70 0.13 var(--hue)) oklch(0.35 0.07 var(--hue))
+  --toc-item-active: #00C8FF #00C8FF
 })

@@ -1,9 +1,32 @@
-# About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+# 关于我
 
-::github{repo="saicaca/fuwari"}
+我是**陈东方**，一个热爱技术与诗词的开发者。
 
-> ### Sources of images used in this site
-> - [Unsplash](https://unsplash.com/)
-> - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
-> - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
+在这个赛博朋克与东方美学交织的时代，我用代码构建世界，用文字记录生活。这个博客是我思想的栖息地，记录着技术探索的足迹、生活中的点滴感悟、以及那些在深夜里被灵感点燃的诗词。
+
+## 技术方向
+
+- **前端开发** — JavaScript / TypeScript / React / Vue
+- **后端开发** — Python / Node.js
+- **工具链** — Git / Docker / Linux
+- **其他** — 正在探索更多可能
+
+## 博客内容
+
+- **技术** — 编程学习笔记、项目踩坑记录、新技术探索
+- **生活** — 日常随想、旅行见闻、美食记录
+- **设计** — UI/UX 灵感、审美提升
+- **项目** — 个人项目介绍与开发日志
+- **诗词** — 原创诗词、古文赏析
+- **回忆** — 那些值得铭记的时光
+
+## 联系方式
+
+- **GitHub**：[Chen-DongFang](https://github.com/Chen-DongFang)
+- **Email**：（待补充）
+
+---
+
+> *万千芳华入盏中，举杯共赏论红尘。*
+
+愿在这个数字世界里，与你相遇。

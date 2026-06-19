@@ -17,17 +17,17 @@ const fakeResult: SearchResult[] = [
 	{
 		url: url("/"),
 		meta: {
-			title: "This Is a Fake Search Result",
+			title: "这是一条模拟搜索结果",
 		},
 		excerpt:
-			"Because the search cannot work in the <mark>dev</mark> environment.",
+			"因为在 <mark>开发环境</mark> 下搜索功能不可用。",
 	},
 	{
 		url: url("/"),
 		meta: {
-			title: "If You Want to Test the Search",
+			title: "如果你想测试搜索功能",
 		},
-		excerpt: "Try running <mark>npm build && npm preview</mark> instead.",
+		excerpt: "请尝试运行 <mark>pnpm build && pnpm preview</mark>。",
 	},
 ];
 
@@ -140,13 +140,13 @@ $: if (initialized && keywordMobile) {
 
 <!-- search bar for desktop view -->
 <div id="search-bar" class="hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg
-      bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06]
-      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
-">
-    <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
+      hover:bg-white/[0.06] focus-within:bg-white/[0.06]
+      border border-white/[0.06] focus-within:border-[var(--cyber-cyan)]/30
+" style="background: rgba(10,10,30,0.4);">
+    <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-[var(--cyber-cyan)]/50"></Icon>
     <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop} on:focus={() => search(keywordDesktop, true)}
            class="transition-all pl-10 text-sm bg-transparent outline-0
-         h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
+         h-full w-40 active:w-60 focus:w-60 text-white/70"
     >
 </div>
 
@@ -162,13 +162,13 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
 
     <!-- search bar inside panel for phone/tablet -->
     <div id="search-bar-inside" class="flex relative lg:hidden transition-all items-center h-11 rounded-xl
-      bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06]
-      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
-  ">
-        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-        <input placeholder="Search" bind:value={keywordMobile}
+      hover:bg-white/[0.06] focus-within:bg-white/[0.06]
+      border border-white/[0.06] focus-within:border-[var(--cyber-cyan)]/30
+  " style="background: rgba(10,10,30,0.4);">
+        <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-[var(--cyber-cyan)]/50"></Icon>
+        <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordMobile}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
-               focus:w-60 text-black/50 dark:text-white/50"
+               focus:w-60 text-white/70"
         >
     </div>
 
@@ -176,9 +176,9 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
     {#each result as item}
         <a href={item.url}
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
-       rounded-xl text-lg px-3 py-2 hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)]">
-            <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--primary)]">
-                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
+       rounded-xl text-lg px-3 py-2 hover:bg-[var(--cyber-cyan)]/5 active:bg-[var(--cyber-cyan)]/10">
+            <div class="transition text-90 inline-flex font-bold group-hover:text-[var(--cyber-pink)]">
+                {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--cyber-cyan)]"></Icon>
             </div>
             <div class="transition text-sm text-50">
                 {@html item.excerpt}

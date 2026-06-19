@@ -1,12 +1,12 @@
 /* Page transition animations with Swup */
 html.is-changing .transition-swup-fade {
-    @apply transition-all duration-200
+    @apply transition-all duration-300
 }
 html.is-animating .transition-swup-fade {
     @apply opacity-0 translate-y-4
 }
 
-/* Fade-in animations for components */
+/* === Fade-in Animations === */
 @keyframes fade-in-up {
     0% {
         transform: translateY(2rem);
@@ -18,10 +18,59 @@ html.is-animating .transition-swup-fade {
     }
 }
 
-/* Main components */
+@keyframes fade-in-scale {
+    0% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes glow-in {
+    0% {
+        opacity: 0;
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+@keyframes slide-in-left {
+    0% {
+        transform: translateX(-2rem);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,200,255,0.2); }
+    50% { box-shadow: 0 0 40px rgba(0,200,255,0.4); }
+}
+
+@keyframes scanline {
+    0% { top: -2px; }
+    100% { top: 100%; }
+}
+
+/* Main components - staggered load-in */
 .onload-animation {
     opacity: 0;
-    animation: 300ms fade-in-up;
+    animation: 500ms fade-in-up cubic-bezier(0.16, 1, 0.3, 1);
     animation-fill-mode: forwards;
 }
 #navbar {
@@ -43,7 +92,7 @@ html.is-animating .transition-swup-fade {
     animation-delay: 400ms;
 }
 
-/* Post content */
+/* Post content stagger */
 #post-container :nth-child(1) { animation-delay: calc(var(--content-delay) + 0ms) }
 #post-container :nth-child(2) { animation-delay: calc(var(--content-delay) + 50ms) }
 #post-container :nth-child(3) { animation-delay: calc(var(--content-delay) + 100ms) }
@@ -51,3 +100,51 @@ html.is-animating .transition-swup-fade {
 #post-container :nth-child(5) { animation-delay: calc(var(--content-delay) + 250ms) }
 #post-container :nth-child(6) { animation-delay: calc(var(--content-delay) + 325ms) }
 
+/* === Cyber Scanline Effect === */
+.scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,200,255,0.3), transparent);
+    animation: scanline 6s linear infinite;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.5;
+}
+
+/* === Particle Container === */
+#cyber-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.cyber-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    animation: particle-float linear infinite;
+    opacity: 0;
+}
+
+@keyframes particle-float {
+    0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-10vh) scale(1);
+        opacity: 0;
+    }
+}
