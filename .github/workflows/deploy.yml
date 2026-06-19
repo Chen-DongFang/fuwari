@@ -25,16 +25,16 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Deploy via rsync
-        uses: burnett01/rsync-deployments@7.0.1
+      - name: Deploy to server
+        uses: easingthemes/ssh-deploy@v5
         with:
-          switches: -avz --delete
-          path: dist/
-          remote_path: /var/www/yunxing.fun/
-          remote_host: ${{ secrets.SERVER_HOST }}
-          remote_port: ${{ secrets.SERVER_PORT }}
-          remote_user: ${{ secrets.SERVER_USER }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.SERVER_HOST }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          REMOTE_PORT: ${{ secrets.SERVER_PORT }}
+          SOURCE: dist/
+          TARGET: /var/www/yunxing.fun/
+          ARGS: "-avz --delete"
 
       - name: Restart blog service
         uses: appleboy/ssh-action@v1
