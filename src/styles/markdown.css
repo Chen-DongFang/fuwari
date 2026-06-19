@@ -20,7 +20,7 @@
     }
 
     a:not(.no-styling) {
-        @apply relative bg-none link font-medium;
+        @apply relative bg-none font-medium;
         color: var(--cyber-cyan);
         text-decoration-color: var(--cyber-cyan);
         text-decoration: underline;
