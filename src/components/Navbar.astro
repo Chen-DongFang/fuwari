@@ -33,7 +33,7 @@ let links: NavBarLink[] = navBarConfig.links.map(
         <div class="hidden md:flex">
             {links.map((l) => {
                 return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
-                          class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
+                          class="nav-link btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-90"
                 >
                     <div class="flex items-center">
                         {l.name}
@@ -67,6 +67,40 @@ function loadButtonScript() {
 
 loadButtonScript();
 </script>
+
+<style>
+    .nav-link {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        color: rgba(255,255,255,0.6);
+    }
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-pink));
+        border-radius: 1px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateX(-50%);
+        opacity: 0;
+    }
+    .nav-link:hover {
+        color: rgba(255,255,255,0.95);
+        background: rgba(255,255,255,0.06);
+        text-shadow: 0 0 20px rgba(0,200,255,0.3);
+    }
+    .nav-link:hover::after {
+        width: 60%;
+        opacity: 1;
+    }
+    .nav-link:active {
+        transform: scale(0.92);
+        transition: transform 0.1s;
+    }
+</style>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 async function loadPagefind() {

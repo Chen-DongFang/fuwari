@@ -23,7 +23,7 @@
 ## 联系方式
 
 - **GitHub**：[Chen-DongFang](https://github.com/Chen-DongFang)
-- **Email**：（待补充）
+- **Email**：[2873044836@qq.com](mailto:2873044836@qq.com)
 
 ---
 

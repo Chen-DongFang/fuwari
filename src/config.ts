@@ -35,10 +35,15 @@ export const siteConfig: SiteConfig = {
 export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
-		LinkPreset.Archive,
 		{
 			name: "诗词",
 			url: "/poetry/",
+			external: false,
+		},
+		LinkPreset.Archive,
+		{
+			name: "项目",
+			url: "/projects/",
 			external: false,
 		},
 		LinkPreset.About,

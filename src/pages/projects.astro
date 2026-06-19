@@ -1,0 +1,114 @@
+---
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+---
+
+<MainGridLayout title="项目" description="技术项目展示">
+
+<div class="relative rounded-2xl overflow-hidden mb-8 p-4 md:p-12" style="background: linear-gradient(135deg, rgba(10,10,30,0.8), rgba(20,10,30,0.9)); border: 1px solid rgba(0,200,255,0.15);">
+  <div class="absolute top-0 left-0 w-10 h-10 md:w-16 md:h-16 border-t-2 border-l-2 rounded-tl-2xl" style="border-color: rgba(0,200,255,0.3);"></div>
+  <div class="absolute top-0 right-0 w-10 h-10 md:w-16 md:h-16 border-t-2 border-r-2 rounded-tr-2xl" style="border-color: rgba(0,200,255,0.3);"></div>
+  <div class="absolute bottom-0 left-0 w-10 h-10 md:w-16 md:h-16 border-b-2 border-l-2 rounded-bl-2xl" style="border-color: rgba(0,200,255,0.3);"></div>
+  <div class="absolute bottom-0 right-0 w-10 h-10 md:w-16 md:h-16 border-b-2 border-r-2 rounded-br-2xl" style="border-color: rgba(0,200,255,0.3);"></div>
+  <div class="text-center relative z-10">
+    <h1 class="text-3xl md:text-5xl font-bold mb-4" style="background: linear-gradient(135deg, var(--cyber-cyan), var(--cyber-pink), var(--cyber-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 200%; animation: gradient-flow 6s ease infinite;">技术项目</h1>
+    <p class="text-sm md:text-lg mb-2" style="color: rgba(255,255,255,0.5);">记录技术探索与实践</p>
+    <p class="text-xs md:text-sm max-w-lg mx-auto" style="color: rgba(255,255,255,0.3); line-height: 1.8;">
+      从零到一，每一个项目都是一次成长。<br>
+      代码不只是工具，更是表达思想的语言。
+    </p>
+    <div class="mt-4 text-xs" style="color: rgba(0,200,255,0.4);" id="project-stats"></div>
+  </div>
+</div>
+
+<div id="projects-content" class="space-y-6"></div>
+
+<div class="text-center py-16 relative" id="projects-empty" style="display: none;">
+  <div class="h-[1px] mb-10 mx-auto max-w-md" style="background: linear-gradient(90deg, transparent, rgba(0,200,255,0.3), transparent);"></div>
+  <p class="text-xl md:text-2xl mb-3" style="color: rgba(255,255,255,0.15); font-family: serif; font-style: italic;">
+    "路漫漫其修远兮，吾将上下而求索。"
+  </p>
+  <p class="text-sm" style="color: rgba(255,255,255,0.1);">更多项目正在路上...</p>
+</div>
+
+</MainGridLayout>
+
+<script is:inline data-astro-rerun>
+  async function loadProjects() {
+    let projects = [];
+    try {
+      const r = await fetch('/data/projects.json');
+      if (r.ok) projects = await r.json();
+    } catch {}
+
+    const statsEl = document.getElementById('project-stats');
+    const content = document.getElementById('projects-content');
+    const empty = document.getElementById('projects-empty');
+    if (!statsEl || !content || !empty) return;
+
+    if (projects.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+
+    statsEl.textContent = `共 ${projects.length} 个项目`;
+
+    const tagColors = {
+      '前端': { bg: 'rgba(0,200,255,0.08)', color: '#00C8FF', border: 'rgba(0,200,255,0.15)' },
+      '后端': { bg: 'rgba(0,255,136,0.08)', color: '#00FF88', border: 'rgba(0,255,136,0.15)' },
+      'AI': { bg: 'rgba(180,77,255,0.08)', color: '#B44DFF', border: 'rgba(180,77,255,0.15)' },
+      '工具': { bg: 'rgba(255,200,0,0.08)', color: '#FFC800', border: 'rgba(255,200,0,0.15)' },
+      '运维': { bg: 'rgba(255,45,149,0.08)', color: '#FF2D95', border: 'rgba(255,45,149,0.15)' },
+      '默认': { bg: 'rgba(0,200,255,0.08)', color: '#00C8FF', border: 'rgba(0,200,255,0.15)' },
+    };
+
+    content.innerHTML = projects.map(p => {
+      const statusColors = {
+        '进行中': { bg: 'rgba(0,200,255,0.1)', color: '#00C8FF', border: 'rgba(0,200,255,0.2)', dot: '#00C8FF' },
+        '已完成': { bg: 'rgba(0,255,136,0.1)', color: '#00FF88', border: 'rgba(0,255,136,0.2)', dot: '#00FF88' },
+        '计划中': { bg: 'rgba(255,200,0,0.1)', color: '#FFC800', border: 'rgba(255,200,0,0.2)', dot: '#FFC800' },
+        '已搁置': { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', dot: 'rgba(255,255,255,0.3)' },
+      };
+      const st = statusColors[p.status] || statusColors['计划中'];
+      const tc = tagColors[p.type] || tagColors['默认'];
+
+      return `
+        <div class="project-card group relative rounded-2xl overflow-hidden transition-all duration-500" style="background: rgba(10,10,30,0.4); border: 1px solid rgba(255,255,255,0.04); backdrop-filter: blur(10px);">
+          <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: radial-gradient(ellipse at 50% 0%, ${tc.bg.replace('0.08', '0.04')} 0%, transparent 70%);"></div>
+          <div class="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: linear-gradient(90deg, transparent, ${tc.color}66, transparent);"></div>
+          <div class="relative p-5 md:p-7">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div class="flex items-center gap-3">
+                <h3 class="text-lg md:text-xl font-bold" style="color: rgba(255,255,255,0.9);">${p.name}</h3>
+                <span class="flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full" style="background: ${st.bg}; color: ${st.color}; border: 1px solid ${st.border};">
+                  <span class="w-1.5 h-1.5 rounded-full" style="background: ${st.dot};"></span>
+                  ${p.status}
+                </span>
+              </div>
+              ${p.url ? `<a href="${p.url}" target="_blank" class="text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg transition hover:bg-[rgba(255,255,255,0.06)]" style="color: rgba(255,255,255,0.4);">
+                查看详情 →
+              </a>` : ''}
+            </div>
+            <p class="text-sm mb-4" style="color: rgba(255,255,255,0.45); line-height: 1.8;">${p.desc}</p>
+            <div class="flex flex-wrap gap-2">
+              ${(p.tags || []).map(tag => `<span class="text-xs px-2.5 py-1 rounded-lg" style="background: ${tc.bg}; color: ${tc.color}; border: 1px solid ${tc.border};">${tag}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  loadProjects();
+  document.addEventListener('swup:contentReplaced', loadProjects);
+</script>
+
+<style>
+  .project-card {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .project-card:hover {
+    border-color: rgba(0,200,255,0.1);
+    box-shadow: 0 8px 40px rgba(0,200,255,0.04), 0 0 0 1px rgba(0,200,255,0.03);
+    transform: translateY(-2px);
+  }
+</style>
