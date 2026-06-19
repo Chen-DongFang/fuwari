@@ -46,15 +46,15 @@ const config = profileConfig;
 (function() {
   async function loadDynamicProfile() {
     try {
-      const r = await fetch('/data/site-data.json');
+      const r = await fetch('/data/site-data.json?t=' + Date.now());
       if (!r.ok) return;
       const data = await r.json();
       if (data.social && data.social.length > 0) {
         const linksEl = document.getElementById('profile-links');
         if (!linksEl) return;
         linksEl.innerHTML = data.social.map(item =>
-          '<a rel="me" aria-label="' + item.name + '" href="' + item.url + '" target="_blank" class="btn-regular rounded-lg h-10 w-10 active:scale-90 hover:shadow-cyber-cyan">' +
-          '<svg class="icon w-[1.5rem] h-[1.5rem]" viewBox="0 0 24 24"><use href="#' + item.icon.replace(':', '-') + '"></use></svg>' +
+          '<a rel="me" aria-label="' + item.name + '" href="' + item.url + '" target="_blank" class="btn-regular rounded-lg h-10 gap-2 px-3 active:scale-90 hover:shadow-cyber-cyan" style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);">' +
+          item.name +
           '</a>'
         ).join('');
       }
