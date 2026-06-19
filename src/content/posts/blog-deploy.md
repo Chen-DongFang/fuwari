@@ -1,5 +1,5 @@
 ---
-title: "Fuwari 博客部署：GitHub Actions + Nginx + Supervisor 自动化上线"
+title: "如何使用GitHub提交代码时服务器自动更新"
 published: 2026-06-19
 description: "从零搭建个人博客的 CI/CD 自动部署流程，踩坑记录，推代码即上线。"
 tags: ["部署", "GitHub Actions", "Nginx", "Supervisor"]
@@ -7,7 +7,7 @@ category: 技术
 draft: false
 ---
 
-# Fuwari 博客部署：推代码即上线
+# 如何使用GitHub提交代码时服务器自动更新
 
 个人博客搭建完成后，最头疼的就是部署。每次改个错别字还得手动 SSH 上传文件？不存在的。
 
