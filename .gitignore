@@ -39,3 +39,6 @@ yarn.lock
 *.jpeg
 public/previews/
 .playwright-mcp/
+
+# allow screenshots in docs
+!docs/images/*.png
