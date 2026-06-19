@@ -404,7 +404,10 @@ const server = http.createServer(async (req, res) => {
         tracks.push(track);
         results.push(track);
       }
-      fs.writeFileSync(MUSIC_JSON, JSON.stringify(tracks, null, 2), 'utf-8');
+      const json = JSON.stringify(tracks, null, 2);
+      fs.writeFileSync(MUSIC_JSON, json, 'utf-8');
+      const siteMusicJson = path.join(SITE_DIR, 'data', 'music.json');
+      try { fs.writeFileSync(siteMusicJson, json, 'utf-8'); } catch {}
       send(res, 200, { ok: true, tracks: results });
     } catch (e) { send(res, 500, { error: e.message }); }
     return;
@@ -415,7 +418,10 @@ const server = http.createServer(async (req, res) => {
     if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
     try {
       const body = await parseBody(req);
-      fs.writeFileSync(MUSIC_JSON, JSON.stringify(body, null, 2), 'utf-8');
+      const json = JSON.stringify(body, null, 2);
+      fs.writeFileSync(MUSIC_JSON, json, 'utf-8');
+      const siteMusicJson = path.join(SITE_DIR, 'data', 'music.json');
+      try { fs.writeFileSync(siteMusicJson, json, 'utf-8'); } catch {}
       send(res, 200, { ok: true });
     } catch (e) { send(res, 500, { error: e.message }); }
     return;
@@ -436,7 +442,10 @@ const server = http.createServer(async (req, res) => {
         const filePath = path.join(SITE_DIR, removed.file);
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       }
-      fs.writeFileSync(MUSIC_JSON, JSON.stringify(tracks, null, 2), 'utf-8');
+      const json = JSON.stringify(tracks, null, 2);
+      fs.writeFileSync(MUSIC_JSON, json, 'utf-8');
+      const siteMusicJson = path.join(SITE_DIR, 'data', 'music.json');
+      try { fs.writeFileSync(siteMusicJson, json, 'utf-8'); } catch {}
       send(res, 200, { ok: true });
     } catch (e) { send(res, 500, { error: e.message }); }
     return;
