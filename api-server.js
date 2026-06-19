@@ -9,6 +9,7 @@ const SITE_DIR = '/var/www/yunxing.fun';
 const AUTH_TOKEN = 'admin.Aa@314159';
 const COMMENTS_DIR = path.join(API_DIR, 'comments');
 const RATE_LIMIT_FILE = path.join(COMMENTS_DIR, '_ratelimit.json');
+const VISITORS_FILE = path.join(API_DIR, 'data', 'visitors.json');
 const MAX_COMMENTS_PER_DAY = 10;
 
 function parseBody(req) {
@@ -328,6 +329,44 @@ const server = http.createServer(async (req, res) => {
     } catch (e) {
       send(res, 500, { error: e.message });
     }
+    return;
+  }
+
+  // ========== Public Visitor API (no auth) ==========
+
+  // POST /api/visitor — record a visit
+  if (req.method === 'POST' && pathname === '/api/visitor') {
+    try {
+      const body = await parseBody(req);
+      const ip = getClientIP(req);
+      const entry = {
+        ip: ip,
+        path: sanitize(body.path || '/'),
+        ua: sanitize((req.headers['user-agent'] || '').slice(0, 200)),
+        timestamp: new Date().toISOString(),
+      };
+      let visitors = [];
+      try { if (fs.existsSync(VISITORS_FILE)) visitors = JSON.parse(fs.readFileSync(VISITORS_FILE, 'utf-8')); } catch {}
+      visitors.push(entry);
+      if (visitors.length > 5000) visitors = visitors.slice(-5000);
+      const dir = path.dirname(VISITORS_FILE);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(VISITORS_FILE, JSON.stringify(visitors, null, 2), 'utf-8');
+      send(res, 200, { ok: true });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // GET /api/visitor — list visitors (auth required)
+  if (req.method === 'GET' && pathname === '/api/visitor') {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      let visitors = [];
+      try { if (fs.existsSync(VISITORS_FILE)) visitors = JSON.parse(fs.readFileSync(VISITORS_FILE, 'utf-8')); } catch {}
+      const limit = parseInt(url.searchParams.get('limit') || '100');
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      send(res, 200, { data: visitors.slice().reverse().slice(offset, offset + limit), total: visitors.length });
+    } catch (e) { send(res, 500, { error: e.message }); }
     return;
   }
 

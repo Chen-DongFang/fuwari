@@ -416,6 +416,16 @@ const bannerOffset =
 
   loadDynamicContent();
   document.addEventListener('swup:contentReplaced', loadDynamicContent);
+
+  // Visitor tracking
+  try {
+    fetch('/api/visitor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: window.location.pathname }),
+      keepalive: true,
+    });
+  } catch (e) {}
 })();
 </script>
 

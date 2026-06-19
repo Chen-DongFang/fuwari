@@ -59,6 +59,10 @@ import Layout from "../layouts/Layout.astro";
           <span class="nav-icon">🎵</span>
           <span class="nav-text">音乐管理</span>
         </button>
+        <button class="nav-item" data-tab="visitors">
+          <span class="nav-icon">👁</span>
+          <span class="nav-text">访客记录</span>
+        </button>
         <button class="nav-item" data-tab="export">
           <span class="nav-icon">💾</span>
           <span class="nav-text">导出数据</span>
@@ -206,6 +210,17 @@ import Layout from "../layouts/Layout.astro";
         <div class="flex gap-3">
           <button id="save-music" class="btn-primary">保存歌单</button>
         </div>
+      </div>
+
+      <!-- Visitors Tab -->
+      <div id="tab-visitors" class="tab-content">
+        <div class="tab-header">
+          <h2>访客记录</h2>
+          <p>查看网站访客访问日志</p>
+        </div>
+        <div id="visitors-stats" class="poetry-stats" style="margin-bottom:20px;"></div>
+        <div id="visitors-list" class="item-list"></div>
+        <button id="load-more-visitors" class="btn-secondary" style="display:none;">加载更多</button>
       </div>
 
       <!-- Export Tab -->
@@ -1211,6 +1226,7 @@ import Layout from "../layouts/Layout.astro";
     loadPoetryTab();
     loadPostsTab();
     loadMusicTab();
+    loadVisitorsTab();
   }
 
   function loadSiteTab() {
@@ -1429,6 +1445,59 @@ import Layout from "../layouts/Layout.astro";
       showToast('已删除');
     } catch (e) { showToast('删除失败'); }
   };
+
+  // ========== Visitors ==========
+  let visitorsOffset = 0;
+  const VISITORS_PER_PAGE = 50;
+
+  async function loadVisitorsTab() {
+    visitorsOffset = 0;
+    await fetchVisitors();
+    document.getElementById('load-more-visitors').onclick = async function() {
+      await fetchVisitors();
+    };
+  }
+
+  async function fetchVisitors() {
+    try {
+      const r = await fetch('/api/visitor?limit=' + VISITORS_PER_PAGE + '&offset=' + visitorsOffset, { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      if (!r.ok) return;
+      const d = await r.json();
+      const total = d.total || 0;
+      const data = d.data || [];
+
+      document.getElementById('visitors-stats').innerHTML =
+        '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">总访客数</div></div>' +
+        '<div class="stat-card"><div class="stat-value">' + getTodayVisits(total, data) + '</div><div class="stat-label">今日访问</div></div>' +
+        '<div class="stat-card"><div class="stat-value">' + data.length + '</div><div class="stat-label">本页</div></div>';
+
+      const list = document.getElementById('visitors-list');
+      const html = data.map(function(v) {
+        const t = new Date(v.timestamp);
+        const timeStr = t.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const ipShort = v.ip ? v.ip.replace(/::ffff:/, '').slice(0, 15) : '未知';
+        const isMobile = /Mobile|Android|iPhone|iPad/i.test(v.ua || '');
+        const browser = (v.ua || '').match(/Chrome|Firefox|Safari|Edge|Opera/i)?.[0] || '其他';
+        return '<div class="item-card">' +
+          '<div class="item-info">' +
+            '<div class="item-name" style="font-family:monospace;font-size:13px;">' + ipShort + '</div>' +
+            '<div class="item-detail">' + timeStr + ' · ' + v.path + ' · ' + browser + (isMobile ? ' 📱' : ' 💻') + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      if (visitorsOffset === 0) list.innerHTML = html;
+      else list.innerHTML += html;
+
+      visitorsOffset += data.length;
+      document.getElementById('load-more-visitors').style.display = visitorsOffset < total ? 'block' : 'none';
+    } catch (e) { console.error(e); }
+  }
+
+  function getTodayVisits(total, recentData) {
+    const today = new Date().toDateString();
+    return recentData.filter(function(v) { return new Date(v.timestamp).toDateString() === today; }).length;
+  }
 
   function loadPostsTab() {
     const list = document.getElementById('posts-list');
