@@ -59,6 +59,10 @@ import Layout from "../layouts/Layout.astro";
           <span class="nav-icon">🎵</span>
           <span class="nav-text">音乐管理</span>
         </button>
+        <button class="nav-item" data-tab="comments">
+          <span class="nav-icon">💬</span>
+          <span class="nav-text">评论管理</span>
+        </button>
         <button class="nav-item" data-tab="visitors">
           <span class="nav-icon">👁</span>
           <span class="nav-text">访客记录</span>
@@ -212,6 +216,16 @@ import Layout from "../layouts/Layout.astro";
         </div>
       </div>
 
+      <!-- Comments Tab -->
+      <div id="tab-comments" class="tab-content">
+        <div class="tab-header">
+          <h2>评论管理</h2>
+          <p>管理留言板和诗词评论</p>
+        </div>
+        <div id="comments-stats" class="poetry-stats" style="margin-bottom:20px;"></div>
+        <div id="comments-list" class="item-list"></div>
+      </div>
+
       <!-- Visitors Tab -->
       <div id="tab-visitors" class="tab-content">
         <div class="tab-header">
@@ -220,7 +234,7 @@ import Layout from "../layouts/Layout.astro";
         </div>
         <div id="visitors-stats" class="poetry-stats" style="margin-bottom:20px;"></div>
         <div id="visitors-list" class="item-list"></div>
-        <button id="load-more-visitors" class="btn-secondary" style="display:none;">加载更多</button>
+        <div id="visitors-pagination" style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:16px;"></div>
       </div>
 
       <!-- Export Tab -->
@@ -1096,6 +1110,21 @@ import Layout from "../layouts/Layout.astro";
     return await r.json();
   }
 
+  async function apiDelete(path) {
+    const r = await fetch(`${API_BASE}${path}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${AUTH_TOKEN}` },
+    });
+    if (!r.ok) throw new Error(`DELETE ${path} failed`);
+    return await r.json();
+  }
+
+  async function apiGetPath(path) {
+    const r = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${AUTH_TOKEN}` } });
+    if (!r.ok) throw new Error(`GET ${path} failed`);
+    return await r.json();
+  }
+
   let apiAvailable = false;
 
   // Data Store
@@ -1226,6 +1255,7 @@ import Layout from "../layouts/Layout.astro";
     loadPoetryTab();
     loadPostsTab();
     loadMusicTab();
+    loadCommentsTab();
     loadVisitorsTab();
   }
 
@@ -1475,33 +1505,99 @@ import Layout from "../layouts/Layout.astro";
     } catch (e) { showToast('删除失败'); }
   };
 
-  // ========== Visitors ==========
-  let visitorsOffset = 0;
-  const VISITORS_PER_PAGE = 50;
+  // ========== Comments ==========
+  async function loadCommentsTab() {
+    try {
+      const d = await apiGetPath('/api/comments/list');
+      const files = d.data || [];
+      let totalComments = 0;
+      files.forEach(f => totalComments += f.count);
 
-  async function loadVisitorsTab() {
-    visitorsOffset = 0;
-    await fetchVisitors();
-    document.getElementById('load-more-visitors').onclick = async function() {
-      await fetchVisitors();
-    };
+      document.getElementById('comments-stats').innerHTML =
+        '<div class="stat-card"><div class="stat-value">' + totalComments + '</div><div class="stat-label">总评论数</div></div>' +
+        '<div class="stat-card"><div class="stat-value">' + files.length + '</div><div class="stat-label">评论板块</div></div>';
+
+      const list = document.getElementById('comments-list');
+      if (!files.length) {
+        list.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:20px;">暂无评论</p>';
+        return;
+      }
+
+      let html = '';
+      for (const f of files) {
+        const displayName = f.name === 'guestbook' ? '📝 留言板' : '💬 ' + f.name.replace('poem_', '诗词#').replace('post_', '文章:');
+        html += '<div style="margin-bottom:16px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;">' +
+            '<span style="color:rgba(255,255,255,0.7);font-weight:bold;font-size:14px;">' + displayName + ' (' + f.count + '条)</span>' +
+          '</div>';
+        if (f.data.length === 0) {
+          html += '<p style="color:rgba(255,255,255,0.2);font-size:12px;padding:8px 12px;">暂无评论</p>';
+        } else {
+          for (const c of f.data) {
+            const t = new Date(c.timestamp);
+            const timeStr = t.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+            html += '<div class="item-card" style="margin-bottom:4px;">' +
+              '<div class="item-info">' +
+                '<div class="item-name" style="font-size:13px;">' + esc(c.name) + ' <span style="color:rgba(255,255,255,0.2);font-size:11px;">' + timeStr + '</span></div>' +
+                '<div class="item-detail" style="font-size:12px;">' + esc(c.content).slice(0, 100) + (c.content.length > 100 ? '...' : '') + '</div>' +
+              '</div>' +
+              '<div class="item-actions">' +
+                '<button class="btn-icon danger" onclick="window._admin.deleteComment(\'' + f.name + '\',\'' + c.id + '\')" title="删除">🗑</button>' +
+              '</div>' +
+            '</div>';
+          }
+        }
+        html += '</div>';
+      }
+      list.innerHTML = html;
+    } catch (e) {
+      document.getElementById('comments-list').innerHTML = '<p style="color:#FF2D95;">加载失败: ' + e.message + '</p>';
+    }
   }
 
-  async function fetchVisitors() {
+  window._admin.deleteComment = async function(fileType, commentId) {
+    if (!confirm('确定要删除这条评论吗？')) return;
     try {
-      const r = await fetch('/api/visitor?limit=' + VISITORS_PER_PAGE + '&offset=' + visitorsOffset, { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      if (fileType === 'guestbook') {
+        await apiDelete('/api/guestbook/' + commentId);
+      } else {
+        const parts = fileType.split('_');
+        const type = parts[0];
+        const id = parts.slice(1).join('_');
+        await apiDelete('/api/comments/' + type + '/' + encodeURIComponent(id) + '/' + commentId);
+      }
+      showToast('已删除');
+      loadCommentsTab();
+    } catch (e) { showToast('删除失败: ' + e.message); }
+  };
+
+  // ========== Visitors ==========
+  let visitorsPage = 1;
+  const VISITORS_PER_PAGE = 50;
+  let visitorsTotal = 0;
+
+  async function loadVisitorsTab() {
+    visitorsPage = 1;
+    await fetchVisitorsPage();
+  }
+
+  async function fetchVisitorsPage() {
+    try {
+      const offset = (visitorsPage - 1) * VISITORS_PER_PAGE;
+      const r = await fetch('/api/visitor?limit=' + VISITORS_PER_PAGE + '&offset=' + offset, { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
       if (!r.ok) return;
       const d = await r.json();
-      const total = d.total || 0;
+      visitorsTotal = d.total || 0;
       const data = d.data || [];
+      const totalPages = Math.max(1, Math.ceil(visitorsTotal / VISITORS_PER_PAGE));
 
       document.getElementById('visitors-stats').innerHTML =
-        '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">总访客数</div></div>' +
-        '<div class="stat-card"><div class="stat-value">' + getTodayVisits(total, data) + '</div><div class="stat-label">今日访问</div></div>' +
+        '<div class="stat-card"><div class="stat-value">' + visitorsTotal + '</div><div class="stat-label">总访客数</div></div>' +
+        '<div class="stat-card"><div class="stat-value">' + visitorsPage + '/' + totalPages + '</div><div class="stat-label">当前页</div></div>' +
         '<div class="stat-card"><div class="stat-value">' + data.length + '</div><div class="stat-label">本页</div></div>';
 
       const list = document.getElementById('visitors-list');
-      const html = data.map(function(v) {
+      list.innerHTML = data.map(function(v) {
         const t = new Date(v.timestamp);
         const timeStr = t.toLocaleString('zh-CN', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
         const ipShort = v.ip ? v.ip.replace(/::ffff:/, '').slice(0, 15) : '未知';
@@ -1515,18 +1611,32 @@ import Layout from "../layouts/Layout.astro";
         '</div>';
       }).join('');
 
-      if (visitorsOffset === 0) list.innerHTML = html;
-      else list.innerHTML += html;
+      // Pagination controls
+      const pag = document.getElementById('visitors-pagination');
+      if (totalPages <= 1) { pag.innerHTML = ''; return; }
+      let pHtml = '';
+      pHtml += '<button class="btn-secondary" style="padding:6px 12px;font-size:12px;" ' + (visitorsPage <= 1 ? 'disabled' : '') + ' onclick="window._admin.goVisitorsPage(' + (visitorsPage - 1) + ')">上一页</button>';
 
-      visitorsOffset += data.length;
-      document.getElementById('load-more-visitors').style.display = visitorsOffset < total ? 'block' : 'none';
+      const startPage = Math.max(1, visitorsPage - 2);
+      const endPage = Math.min(totalPages, visitorsPage + 2);
+      if (startPage > 1) pHtml += '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="window._admin.goVisitorsPage(1)">1</button>';
+      if (startPage > 2) pHtml += '<span style="color:rgba(255,255,255,0.3);font-size:12px;">...</span>';
+      for (let i = startPage; i <= endPage; i++) {
+        const active = i === visitorsPage;
+        pHtml += '<button class="' + (active ? 'btn-primary' : 'btn-secondary') + '" style="padding:6px 10px;font-size:12px;min-width:32px;" onclick="window._admin.goVisitorsPage(' + i + ')">' + i + '</button>';
+      }
+      if (endPage < totalPages - 1) pHtml += '<span style="color:rgba(255,255,255,0.3);font-size:12px;">...</span>';
+      if (endPage < totalPages) pHtml += '<button class="btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="window._admin.goVisitorsPage(' + totalPages + ')">' + totalPages + '</button>';
+
+      pHtml += '<button class="btn-secondary" style="padding:6px 12px;font-size:12px;" ' + (visitorsPage >= totalPages ? 'disabled' : '') + ' onclick="window._admin.goVisitorsPage(' + (visitorsPage + 1) + ')">下一页</button>';
+      pag.innerHTML = pHtml;
     } catch (e) { console.error(e); }
   }
 
-  function getTodayVisits(total, recentData) {
-    const today = new Date().toDateString();
-    return recentData.filter(function(v) { return new Date(v.timestamp).toDateString() === today; }).length;
-  }
+  window._admin.goVisitorsPage = function(page) {
+    visitorsPage = page;
+    fetchVisitorsPage();
+  };
 
   function loadPostsTab() {
     const list = document.getElementById('posts-list');

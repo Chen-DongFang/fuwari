@@ -243,6 +243,53 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // DELETE /api/guestbook/:commentId — 删除留言 (auth required)
+  if (req.method === 'DELETE' && pathname.startsWith('/api/guestbook/')) {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      const commentId = pathname.slice('/api/guestbook/'.length);
+      const filePath = path.join(COMMENTS_DIR, 'guestbook.json');
+      const messages = readComments(filePath);
+      const filtered = messages.filter(m => m.id !== commentId);
+      if (filtered.length === messages.length) return send(res, 404, { error: 'Not found' });
+      writeComments(filePath, filtered);
+      send(res, 200, { ok: true });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // DELETE /api/comments/:type/:id/:commentId — 删除评论 (auth required)
+  if (req.method === 'DELETE' && /^\/api\/comments\/([^/]+)\/([^/]+)\/([^/]+)$/.test(pathname)) {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      const m = pathname.match(/^\/api\/comments\/([^/]+)\/([^/]+)\/([^/]+)$/);
+      const filePath = getCommentsFile(m[1], decodeURIComponent(m[2]));
+      const commentId = m[3];
+      const comments = readComments(filePath);
+      const filtered = comments.filter(c => c.id !== commentId);
+      if (filtered.length === comments.length) return send(res, 404, { error: 'Not found' });
+      writeComments(filePath, filtered);
+      send(res, 200, { ok: true });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // GET /api/comments/list — 列出所有评论文件 (auth required)
+  if (req.method === 'GET' && pathname === '/api/comments/list') {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      const files = fs.readdirSync(COMMENTS_DIR).filter(f => f.endsWith('.json') && !f.startsWith('_'));
+      const result = [];
+      for (const f of files) {
+        const data = readComments(path.join(COMMENTS_DIR, f));
+        const name = f.replace('.json', '');
+        result.push({ file: f, name, count: data.length, data });
+      }
+      send(res, 200, { data: result });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
   // ========== Admin API (auth required) ==========
 
   // GET /api/data/:filename — 读取数据
