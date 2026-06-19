@@ -407,6 +407,101 @@ const bannerOffset =
   loadDynamicContent();
   document.addEventListener('swup:contentReplaced', loadDynamicContent);
 
+  // ========== Guestbook ==========
+  function initGuestbook() {
+    const el = document.getElementById('guestbook-content');
+    if (!el || el.dataset.guestbookInit) return;
+    el.dataset.guestbookInit = '1';
+
+    const colors = ['#00C8FF', '#FF2D95', '#B44DFF', '#FFC800', '#00FF88', '#FF6600'];
+    function getColor(s) { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return colors[Math.abs(h)%colors.length]; }
+    function timeAgo(ts) { const d=Date.now()-new Date(ts).getTime(); const m=Math.floor(d/60000); if(m<1)return'刚刚'; if(m<60)return m+'分钟前'; const hr=Math.floor(m/60); if(hr<24)return hr+'小时前'; const dy=Math.floor(hr/24); if(dy<30)return dy+'天前'; return new Date(ts).toLocaleDateString('zh-CN'); }
+    function renderOne(c) {
+      const co = getColor(c.name);
+      return '<div class="p-4 md:p-5 rounded-2xl transition-all" style="background:rgba(10,10,30,0.4);border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(10px);">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:'+co+'15;color:'+co+';border:1px solid '+co+'30;">'+c.name.charAt(0)+'</div>' +
+          '<div><span class="text-sm font-bold" style="color:'+co+';">'+c.name+'</span>' +
+          '<span class="text-xs ml-2" style="color:rgba(255,255,255,0.2);">'+timeAgo(c.timestamp)+'</span></div>' +
+        '</div>' +
+        '<p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.6);">'+c.content+'</p>' +
+      '</div>';
+    }
+
+    el.innerHTML =
+      '<div class="mb-6 p-4 md:p-5 rounded-2xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">' +
+        '<input class="gb-name w-full px-3 py-2 rounded-lg text-sm outline-none mb-3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);" placeholder="你的昵称" maxlength="50">' +
+        '<textarea class="gb-content w-full px-3 py-2 rounded-lg text-sm outline-none resize-none mb-3" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);min-height:100px;" placeholder="想说什么就写什么..." maxlength="2000"></textarea>' +
+        '<div class="flex justify-between items-center">' +
+          '<span class="gb-status text-xs" style="color:rgba(255,255,255,0.3);"></span>' +
+          '<button class="gb-submit px-5 py-2 rounded-lg text-sm font-bold" style="background:linear-gradient(135deg,rgba(255,200,0,0.2),rgba(255,200,0,0.1));border:1px solid rgba(255,200,0,0.3);color:#FFC800;">发表留言</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="gb-list" class="space-y-4"></div>';
+
+    const nameInput = el.querySelector('.gb-name');
+    const contentInput = el.querySelector('.gb-content');
+    const submitBtn = el.querySelector('.gb-submit');
+    const statusEl = el.querySelector('.gb-status');
+    const listEl = el.querySelector('#gb-list');
+
+    nameInput.value = localStorage.getItem('comment_name') || '';
+
+    async function loadMessages() {
+      try {
+        let data;
+        try { const r = await fetch('/api/guestbook'); if(r.ok) data = await r.json(); } catch {}
+        if (!data) { try { const r = await fetch('/data/comments/guestbook.json'); if(r.ok) data = { data: await r.json() }; } catch {} }
+        if (!data) return;
+        if (!data.data || !data.data.length) {
+          listEl.innerHTML = '<p class="text-center py-8 text-sm" style="color:rgba(255,255,255,0.2);">还没有留言，做第一个吧~</p>';
+          return;
+        }
+        listEl.innerHTML = data.data.map(renderOne).join('');
+      } catch {}
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const name = nameInput.value.trim();
+      const content = contentInput.value.trim();
+      if (!name) { statusEl.textContent = '请输入昵称'; statusEl.style.color = '#FF2D95'; return; }
+      if (!content) { statusEl.textContent = '请输入留言内容'; statusEl.style.color = '#FF2D95'; return; }
+      submitBtn.disabled = true;
+      submitBtn.textContent = '发送中...';
+      try {
+        const r = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, content }),
+        });
+        if (r.ok) {
+          contentInput.value = '';
+          statusEl.textContent = '留言成功!';
+          statusEl.style.color = '#00FF88';
+          localStorage.setItem('comment_name', name);
+          await loadMessages();
+        } else {
+          statusEl.textContent = '发送失败';
+          statusEl.style.color = '#FF2D95';
+        }
+      } catch {
+        statusEl.textContent = '网络错误';
+        statusEl.style.color = '#FF2D95';
+      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = '发表留言';
+    });
+
+    contentInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitBtn.click();
+    });
+
+    loadMessages();
+  }
+
+  initGuestbook();
+  document.addEventListener('swup:contentReplaced', initGuestbook);
+
   // Visitor tracking
   try {
     fetch('/api/visitor', {
