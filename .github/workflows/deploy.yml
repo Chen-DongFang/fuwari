@@ -50,6 +50,18 @@ jobs:
         env:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 
+      - name: Deploy Nginx config
+        run: |
+          sshpass -p "$SERVER_PASSWORD" rsync -avz \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            nginx/yunxing.fun \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/etc/nginx/sites-available/yunxing.fun
+          sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "nginx -t && systemctl reload nginx"
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+
       - name: Deploy data files to public (preserve server data)
         run: |
           sshpass -p "$SERVER_PASSWORD" rsync -avz \
