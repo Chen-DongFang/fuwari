@@ -29,23 +29,25 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 
 <script is:inline data-astro-rerun>
 (function() {
-  const el = document.getElementById('guestbook-content');
-  if (!el) return;
+  function initGuestbook() {
+    const el = document.getElementById('guestbook-content');
+    if (!el || el.dataset.guestbookInit) return;
+    el.dataset.guestbookInit = '1';
 
-  const colors = ['#00C8FF', '#FF2D95', '#B44DFF', '#FFC800', '#00FF88', '#FF6600'];
-  function getColor(s) { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return colors[Math.abs(h)%colors.length]; }
-  function timeAgo(ts) { const d=Date.now()-new Date(ts).getTime(); const m=Math.floor(d/60000); if(m<1)return'刚刚'; if(m<60)return m+'分钟前'; const hr=Math.floor(m/60); if(hr<24)return hr+'小时前'; const dy=Math.floor(hr/24); if(dy<30)return dy+'天前'; return new Date(ts).toLocaleDateString('zh-CN'); }
-  function renderOne(c) {
-    const co = getColor(c.name);
-    return '<div class="p-4 md:p-5 rounded-2xl transition-all" style="background:rgba(10,10,30,0.4);border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(10px);">' +
-      '<div class="flex items-center gap-3 mb-3">' +
-        '<div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:'+co+'15;color:'+co+';border:1px solid '+co+'30;">'+c.name.charAt(0)+'</div>' +
-        '<div><span class="text-sm font-bold" style="color:'+co+';">'+c.name+'</span>' +
-        '<span class="text-xs ml-2" style="color:rgba(255,255,255,0.2);">'+timeAgo(c.timestamp)+'</span></div>' +
-      '</div>' +
-      '<p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.6);">'+c.content+'</p>' +
-    '</div>';
-  }
+    const colors = ['#00C8FF', '#FF2D95', '#B44DFF', '#FFC800', '#00FF88', '#FF6600'];
+    function getColor(s) { let h=0; for(let i=0;i<s.length;i++) h=s.charCodeAt(i)+((h<<5)-h); return colors[Math.abs(h)%colors.length]; }
+    function timeAgo(ts) { const d=Date.now()-new Date(ts).getTime(); const m=Math.floor(d/60000); if(m<1)return'刚刚'; if(m<60)return m+'分钟前'; const hr=Math.floor(m/60); if(hr<24)return hr+'小时前'; const dy=Math.floor(hr/24); if(dy<30)return dy+'天前'; return new Date(ts).toLocaleDateString('zh-CN'); }
+    function renderOne(c) {
+      const co = getColor(c.name);
+      return '<div class="p-4 md:p-5 rounded-2xl transition-all" style="background:rgba(10,10,30,0.4);border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(10px);">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0" style="background:'+co+'15;color:'+co+';border:1px solid '+co+'30;">'+c.name.charAt(0)+'</div>' +
+          '<div><span class="text-sm font-bold" style="color:'+co+';">'+c.name+'</span>' +
+          '<span class="text-xs ml-2" style="color:rgba(255,255,255,0.2);">'+timeAgo(c.timestamp)+'</span></div>' +
+        '</div>' +
+        '<p class="text-sm leading-relaxed" style="color:rgba(255,255,255,0.6);">'+c.content+'</p>' +
+      '</div>';
+    }
 
   el.innerHTML =
     '<div class="mb-6 p-4 md:p-5 rounded-2xl" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">' +
@@ -119,5 +121,15 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
   });
 
   loadMessages();
+  }
+
+  // Run on first load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGuestbook);
+  } else {
+    initGuestbook();
+  }
+  // Run on Swup page transition
+  document.addEventListener('swup:contentReplaced', initGuestbook);
 })();
 </script>
