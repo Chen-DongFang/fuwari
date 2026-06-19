@@ -336,9 +336,9 @@ const bannerOffset =
     `).join('');
   }
 
-  function loadDynamicContent() {
-    loadPoetry();
-    setTimeout(initPoemComments, 100);
+  async function loadDynamicContent() {
+    await loadPoetry();
+    initPoemComments();
   }
 
   function initPoemComments() {
