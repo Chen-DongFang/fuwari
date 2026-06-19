@@ -25,23 +25,22 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          printenv SSH_KEY > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
       - name: Deploy via rsync
         run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SERVER_PORT }}" \
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 
       - name: Restart blog
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ secrets.SERVER_PORT }} \
+          sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "supervisorctl restart fuwari-blog"
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
