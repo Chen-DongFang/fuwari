@@ -118,19 +118,17 @@
 
 <script is:inline>
 (function() {
-  var DEFAULT_TRACKS = [
-    { url: '/music/乃万NINEONE、DiESi - 搬进我心里 (Prod.By DiESi).mp3', title: '搬进我心里', artist: '乃万 & DiESi' }
-  ];
-
   var audio = new Audio();
   audio.volume = 0.8;
   var state = { playing: false, expanded: false, current: -1, tracks: [], volume: 0.8, muted: false, shuffle: false, repeat: 0 };
   var audioCtx, analyser, sourceNode, gainNode;
 
   function init() {
-    DEFAULT_TRACKS.forEach(function(t) { state.tracks.push(Object.assign({}, t, { cover: genCover(t.title) })); });
-    renderPlaylist();
-    if (state.tracks.length) loadTrack(0);
+    fetch('/data/music.json').then(function(r) { return r.json(); }).then(function(tracks) {
+      state.tracks = tracks.map(function(t) { return Object.assign({}, t, { cover: genCover(t.title) }); });
+      renderPlaylist();
+      if (state.tracks.length) loadTrack(0);
+    }).catch(function() {});
   }
 
   function genCover(s) {
@@ -160,7 +158,7 @@
   function loadTrack(i) {
     if (i < 0 || i >= state.tracks.length) return;
     state.current = i;
-    audio.src = state.tracks[i].url;
+    audio.src = state.tracks[i].file || state.tracks[i].url;
     document.getElementById('music-title').textContent = state.tracks[i].title;
     document.getElementById('music-artist').textContent = state.tracks[i].artist;
     document.getElementById('music-cover-art').style.background = state.tracks[i].cover;

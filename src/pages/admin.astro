@@ -55,6 +55,10 @@ import Layout from "../layouts/Layout.astro";
           <span class="nav-icon">📝</span>
           <span class="nav-text">博客管理</span>
         </button>
+        <button class="nav-item" data-tab="music">
+          <span class="nav-icon">🎵</span>
+          <span class="nav-text">音乐管理</span>
+        </button>
         <button class="nav-item" data-tab="export">
           <span class="nav-icon">💾</span>
           <span class="nav-text">导出数据</span>
@@ -184,6 +188,24 @@ import Layout from "../layouts/Layout.astro";
           <p>查看和管理已发布的博客文章</p>
         </div>
         <div id="posts-list" class="item-list"></div>
+      </div>
+
+      <!-- Music Tab -->
+      <div id="tab-music" class="tab-content">
+        <div class="tab-header">
+          <h2>音乐管理</h2>
+          <p>上传和管理背景音乐歌单</p>
+        </div>
+        <div id="music-upload-area" style="border:2px dashed rgba(0,247,255,0.2);border-radius:12px;padding:24px;text-align:center;margin-bottom:20px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(0,247,255,0.4)';this.style.background='rgba(0,247,255,0.03)'" onmouseout="this.style.borderColor='rgba(0,247,255,0.2)';this.style.background='transparent'">
+          <input type="file" id="music-file" accept="audio/*" multiple style="display:none" />
+          <p style="font-size:24px;margin-bottom:8px;">🎵</p>
+          <p style="color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:4px;">点击或拖拽音频文件到此处上传</p>
+          <p style="color:rgba(255,255,255,0.3);font-size:12px;">支持 MP3 / WAV / FLAC / OGG</p>
+        </div>
+        <div id="music-list" class="item-list"></div>
+        <div class="flex gap-3">
+          <button id="save-music" class="btn-primary">保存歌单</button>
+        </div>
       </div>
 
       <!-- Export Tab -->
@@ -1188,6 +1210,7 @@ import Layout from "../layouts/Layout.astro";
     loadNavbarTab();
     loadPoetryTab();
     loadPostsTab();
+    loadMusicTab();
   }
 
   function loadSiteTab() {
@@ -1315,6 +1338,97 @@ import Layout from "../layouts/Layout.astro";
       </div>
     `).join('');
   }
+
+  // ========== Music Management ==========
+  let musicData = [];
+
+  async function loadMusicTab() {
+    try {
+      const r = await fetch('/api/music', { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      if (r.ok) { const d = await r.json(); musicData = d.data || []; }
+    } catch {}
+    renderMusicList();
+
+    // Upload area
+    const uploadArea = document.getElementById('music-upload-area');
+    const fileInput = document.getElementById('music-file');
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      uploadMusicFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => uploadMusicFiles(e.target.files));
+
+    document.getElementById('save-music').addEventListener('click', async () => {
+      try {
+        await apiPost('music.json', musicData);
+        showToast('歌单已保存到服务器');
+      } catch (e) { showToast('保存失败: ' + e.message); }
+    });
+  }
+
+  function renderMusicList() {
+    const list = document.getElementById('music-list');
+    if (!musicData.length) {
+      list.innerHTML = '<p style="color:rgba(255,255,255,0.3);text-align:center;padding:20px;">暂无音乐，点击上方上传</p>';
+      return;
+    }
+    list.innerHTML = musicData.map((t, i) => `
+      <div class="item-card">
+        <div class="item-info">
+          <div class="item-name">${esc(t.title)}</div>
+          <div class="item-detail">${esc(t.artist)} | ${t.file}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon" onclick="window._admin.playMusic(${i})" title="播放">▶</button>
+          <button class="btn-icon danger" onclick="window._admin.deleteMusic('${t.id}')" title="删除">🗑</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function uploadMusicFiles(files) {
+    if (!files || !files.length) return;
+    for (const f of files) {
+      const formData = new FormData();
+      formData.append('file', f);
+      formData.append('title', f.name.replace(/\.[^/.]+$/, '').split(' - ').pop() || f.name);
+      formData.append('artist', f.name.split(' - ')[0] || '未知');
+      try {
+        const r = await fetch('/api/music/upload', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + AUTH_TOKEN },
+          body: formData,
+        });
+        if (r.ok) {
+          const d = await r.json();
+          if (d.tracks) musicData.push(...d.tracks);
+        }
+      } catch (e) { showToast('上传失败: ' + e.message); }
+    }
+    renderMusicList();
+    showToast('上传完成');
+  }
+
+  window._admin = window._admin || {};
+  window._admin.playMusic = function(index) {
+    const track = musicData[index];
+    if (!track) return;
+    const w = window.open('', '_blank');
+    w.document.write('<audio src="' + track.file + '" autoplay controls style="width:100%;margin:40px auto;display:block;max-width:500px;"></audio><h2 style="text-align:center;color:#fff;background:#0a0a1a;padding:20px;font-family:sans-serif;">' + track.title + ' - ' + track.artist + '</h2>');
+    w.document.body.style.background = '#0a0a1a';
+  };
+
+  window._admin.deleteMusic = async function(id) {
+    if (!confirm('确定要删除这首音乐吗？')) return;
+    try {
+      await fetch('/api/music/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      musicData = musicData.filter(t => t.id !== id);
+      renderMusicList();
+      showToast('已删除');
+    } catch (e) { showToast('删除失败'); }
+  };
 
   function loadPostsTab() {
     const list = document.getElementById('posts-list');

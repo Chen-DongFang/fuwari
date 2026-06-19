@@ -100,6 +100,46 @@ function checkRateLimit(ip) {
   return true;
 }
 
+const MUSIC_DIR = path.join(SITE_DIR, 'music');
+const MUSIC_JSON = path.join(API_DIR, 'data', 'music.json');
+
+function parseMultipart(req) {
+  return new Promise((resolve, reject) => {
+    const boundary = req.headers['content-type']?.match(/boundary=(.+)/)?.[1];
+    if (!boundary) return reject(new Error('No boundary'));
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      const buf = Buffer.concat(chunks);
+      const boundaryBuf = Buffer.from('--' + boundary);
+      const files = [];
+      const fields = {};
+      let pos = 0;
+      while (pos < buf.length) {
+        const start = buf.indexOf(boundaryBuf, pos);
+        if (start === -1) break;
+        const nextStart = buf.indexOf(boundaryBuf, start + boundaryBuf.length);
+        if (nextStart === -1) break;
+        const part = buf.slice(start + boundaryBuf.length, nextStart);
+        const headerEnd = part.indexOf('\r\n\r\n');
+        if (headerEnd === -1) { pos = nextStart; continue; }
+        const headers = part.slice(0, headerEnd).toString('utf-8');
+        const body = part.slice(headerEnd + 4, part.length - 2);
+        const nameMatch = headers.match(/name="([^"]+)"/);
+        const filenameMatch = headers.match(/filename="([^"]+)"/);
+        if (filenameMatch && nameMatch) {
+          files.push({ name: nameMatch[1], filename: filenameMatch[1], data: body });
+        } else if (nameMatch) {
+          fields[nameMatch[1]] = body.toString('utf-8');
+        }
+        pos = nextStart;
+      }
+      resolve({ files, fields });
+    });
+    req.on('error', reject);
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
@@ -288,6 +328,78 @@ const server = http.createServer(async (req, res) => {
     } catch (e) {
       send(res, 500, { error: e.message });
     }
+    return;
+  }
+
+  // ========== Admin Music API ==========
+
+  // GET /api/music — list tracks
+  if (req.method === 'GET' && pathname === '/api/music') {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      let tracks = [];
+      if (fs.existsSync(MUSIC_JSON)) tracks = JSON.parse(fs.readFileSync(MUSIC_JSON, 'utf-8'));
+      send(res, 200, { data: tracks });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // POST /api/music/upload — upload audio file
+  if (req.method === 'POST' && pathname === '/api/music/upload') {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      if (!fs.existsSync(MUSIC_DIR)) fs.mkdirSync(MUSIC_DIR, { recursive: true });
+      const { files, fields } = await parseMultipart(req);
+      if (!files.length) return send(res, 400, { error: 'No file' });
+      let tracks = [];
+      if (fs.existsSync(MUSIC_JSON)) tracks = JSON.parse(fs.readFileSync(MUSIC_JSON, 'utf-8'));
+
+      const results = [];
+      for (const f of files) {
+        const safeName = f.filename.replace(/[^\w\u4e00-\u9fff\-(). ]/g, '_');
+        const destPath = path.join(MUSIC_DIR, safeName);
+        fs.writeFileSync(destPath, f.data);
+        const title = fields.title || safeName.replace(/\.[^/.]+$/, '');
+        const artist = fields.artist || '未知艺术家';
+        const track = { id: crypto.randomUUID(), title, artist, file: '/music/' + safeName };
+        tracks.push(track);
+        results.push(track);
+      }
+      fs.writeFileSync(MUSIC_JSON, JSON.stringify(tracks, null, 2), 'utf-8');
+      send(res, 200, { ok: true, tracks: results });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // POST /api/music/reorder — save track order
+  if (req.method === 'POST' && pathname === '/api/music/reorder') {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      const body = await parseBody(req);
+      fs.writeFileSync(MUSIC_JSON, JSON.stringify(body, null, 2), 'utf-8');
+      send(res, 200, { ok: true });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
+  // DELETE /api/music/:id — delete track
+  if (req.method === 'DELETE' && pathname.startsWith('/api/music/')) {
+    if (!checkAuth(req)) return send(res, 401, { error: 'Unauthorized' });
+    try {
+      const id = pathname.slice('/api/music/'.length);
+      let tracks = [];
+      if (fs.existsSync(MUSIC_JSON)) tracks = JSON.parse(fs.readFileSync(MUSIC_JSON, 'utf-8'));
+      const idx = tracks.findIndex(t => t.id === id);
+      if (idx === -1) return send(res, 404, { error: 'Not found' });
+      const removed = tracks.splice(idx, 1)[0];
+      // delete file
+      if (removed.file) {
+        const filePath = path.join(SITE_DIR, removed.file);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }
+      fs.writeFileSync(MUSIC_JSON, JSON.stringify(tracks, null, 2), 'utf-8');
+      send(res, 200, { ok: true });
+    } catch (e) { send(res, 500, { error: e.message }); }
     return;
   }
 
