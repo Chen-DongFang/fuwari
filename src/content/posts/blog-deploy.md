@@ -1,7 +1,7 @@
 ---
 title: "Fuwari 博客部署：GitHub Actions + Nginx + Supervisor 自动化上线"
 published: 2026-06-19
-description: "从零搭建个人博客的 CI/CD 自动部署流程，推代码即上线。"
+description: "从零搭建个人博客的 CI/CD 自动部署流程，踩坑记录，推代码即上线。"
 tags: ["部署", "GitHub Actions", "Nginx", "Supervisor"]
 category: 技术
 draft: false
@@ -11,7 +11,7 @@ draft: false
 
 个人博客搭建完成后，最头疼的就是部署。每次改个错别字还得手动 SSH 上传文件？不存在的。
 
-这篇文章记录了我如何用 GitHub Actions + Nginx + Supervisor 搭建一套「推代码即上线」的自动化部署流程。
+这篇文章记录了我如何用 GitHub Actions + Nginx + Supervisor 搭建一套「推代码即上线」的自动化部署流程，以及过程中踩过的坑。
 
 ## 整体架构
 
@@ -19,33 +19,22 @@ draft: false
 本地修改 → git push → GitHub Actions 自动构建 → rsync 上传服务器 → Supervisor 重启 → 上线
 ```
 
-最终的请求链路：
+请求链路：
 
 ```
 用户浏览器 → Nginx (80端口) → 反向代理 → serve (8080) → 静态文件
 ```
 
-## 为什么选这套方案
-
-| 方案 | 优点 | 缺点 |
-|------|------|------|
-| 手动上传 | 简单 | 容易忘、容易错 |
-| 服务器 Git Hook | 自动 | 服务器需开放 Git 端口，安全性差 |
-| **GitHub Actions** | **免费、安全、有日志** | **首次配置稍复杂** |
-| Vercel/Netlify | 零配置 | 国内访问慢，不够灵活 |
-
-GitHub Actions 的好处：代码托管和 CI/CD 在同一平台，服务器不需要暴露 Git 端口，构建日志完整可查。
-
 ## 服务器准备
 
-### 安装 Nginx
+### 1. 安装 Nginx
 
 ```bash
 apt update && apt install -y nginx
 systemctl enable nginx
 ```
 
-### 安装 serve（静态文件服务器）
+### 2. 安装 serve（静态文件服务器）
 
 ```bash
 npm install -g serve
@@ -53,14 +42,14 @@ npm install -g serve
 
 `serve` 是一个轻量 Node.js 静态文件服务器，比 Nginx 直接托管更灵活，且方便 Supervisor 管理进程。
 
-### 配置 Supervisor
+### 3. 配置 Supervisor
 
 Supervisor 负责管理 `serve` 进程：崩溃自动重启、开机自启。
 
 ```ini
 # /etc/supervisor/conf.d/fuwari-blog.conf
 [program:fuwari-blog]
-command=/usr/bin/serve -s /var/www/yunxing.fun -l 8080
+command=/usr/bin/serve /var/www/yunxing.fun -l 8080
 directory=/var/www/yunxing.fun
 autostart=true
 autorestart=true
@@ -69,6 +58,8 @@ startretries=5
 stdout_logfile=/var/log/fuwari-blog.log
 stderr_logfile=/var/log/fuwari-blog-error.log
 user=root
+stopasgroup=true
+killasgroup=true
 ```
 
 ```bash
@@ -76,7 +67,7 @@ supervisorctl reread && supervisorctl update
 supervisorctl status  # 确认 fuwari-blog RUNNING
 ```
 
-### 配置 Nginx 反向代理
+### 4. 配置 Nginx 反向代理
 
 Nginx 监听 80 端口，把请求转发给 8080 的 serve：
 
@@ -134,8 +125,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Install dependencies
         run: pnpm install
@@ -143,50 +132,101 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Deploy via rsync
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avz --delete
-          path: dist/
-          remote_path: /var/www/yunxing.fun/
-          remote_host: ${{ secrets.SERVER_HOST }}
-          remote_port: ${{ secrets.SERVER_PORT }}
-          remote_user: ${{ secrets.SERVER_USER }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
-      - name: Restart blog service
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SERVER_PORT }}
-          script: |
-            supervisorctl restart fuwari-blog
+      - name: Deploy via rsync
+        run: |
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            dist/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+
+      - name: Restart blog
+        run: |
+          sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "supervisorctl restart fuwari-blog"
+        env:
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 ```
 
 ## GitHub Secrets 配置
 
-服务器密码不能写在代码里，需要存到 GitHub Secrets：
+敏感信息存到 GitHub Secrets，不能写在代码里：
 
 ```bash
-gh secret set SSH_PRIVATE_KEY --body "$(cat ~/.ssh/github_deploy)"
 gh secret set SERVER_HOST --body "117.72.100.178"
 gh secret set SERVER_PORT --body "22"
 gh secret set SERVER_USER --body "root"
+gh secret set SERVER_PASSWORD --body "你的服务器密码"
 ```
 
-SSH 密钥生成和部署：
+## 踩坑记录
 
-```bash
-# 本地生成密钥
-ssh-keygen -t ed25519 -f ~/.ssh/github_deploy -N ""
+### 坑 1：SSH 密钥认证失败（Windows 特有）
 
-# 公钥添加到服务器
-cat ~/.ssh/github_deploy.pub >> /root/.ssh/authorized_keys
+最初用 SSH 密钥认证，但 GitHub Actions 一直报 `Permission denied`。
+
+**原因**：Windows PowerShell 读取多行 SSH 私钥时，会把 `\n` 转成 `\r\n`（CRLF），导致密钥文件格式被破坏。GitHub Actions 的 Docker 容器内 SSH 客户端直接拒绝这个损坏的密钥。
+
+**解决**：放弃密钥认证，改用 `sshpass + 密码认证`。密码是单行字符串，不存在换行符问题：
+
+```yaml
+- name: Install sshpass
+  run: sudo apt-get install -y sshpass
+
+- name: Deploy via rsync
+  run: |
+    sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+      -e "ssh -o StrictHostKeyChecking=no" \
+      dist/ \
+      ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
+  env:
+    SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 ```
 
-## 工作流程
+### 坑 2：`serve -s` 导致页面跳转失效
+
+部署后发现所有链接点击都没反应，页面不跳转。
+
+**原因**：`serve -s` 启用了 SPA（单页应用）模式，会把所有请求都重定向到 `index.html`。但 Astro 生成的是多页静态站，每个路由都有独立的 `index.html`。
+
+**解决**：去掉 `-s` 参数：
+
+```diff
+- command=/usr/bin/serve -s /var/www/yunxing.fun -l 8080
++ command=/usr/bin/serve /var/www/yunxing.fun -l 8080
+```
+
+### 坑 3：pnpm 版本冲突
+
+GitHub Actions 报错 `Multiple versions of pnpm specified`。
+
+**原因**：`package.json` 里声明了 `"packageManager": "pnpm@9.14.4"`，工作流里又手动指定 `version: 9`，两者冲突。
+
+**解决**：工作流里去掉 `version` 参数，让 pnpm action 自动读取 `package.json`：
+
+```yaml
+- name: Setup pnpm
+  uses: pnpm/action-setup@v4
+  # 不指定 version，自动从 package.json 读取
+```
+
+### 坑 4：Nginx `$uri` 变量被 PowerShell 吃掉
+
+通过 PowerShell heredoc 写 Nginx 配置时，`$uri` 被 PowerShell 当变量解析成空字符串，导致 `try_files` 指令错误，页面出现 301 重定向循环。
+
+**解决**：用 base64 编码传输配置文件，避免 PowerShell 变量替换：
+
+```powershell
+$base64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($content))
+echo y | plink -ssh root@server -pw "pass" "echo '$base64' | base64 -d > /etc/nginx/sites-available/yunxing.fun"
+```
+
+## 工作流程总结
 
 ```
 本地 git push
@@ -195,9 +235,9 @@ GitHub Actions 启动 Ubuntu 虚拟机
     ↓
 安装依赖 → pnpm build → 生成 dist/
     ↓
-SSH + rsync 上传到 /var/www/yunxing.fun/
+sshpass + rsync 上传到 /var/www/yunxing.fun/
     ↓
-SSH 执行 supervisorctl restart fuwari-blog
+sshpass + ssh 执行 supervisorctl restart fuwari-blog
     ↓
 约 2-3 分钟后上线
 ```
@@ -209,6 +249,7 @@ supervisorctl status              # 查看所有服务状态
 supervisorctl restart fuwari-blog  # 重启博客
 supervisorctl stop fuwari-blog     # 停止博客
 tail -f /var/log/fuwari-blog.log  # 查看日志
+tail -f /var/log/fuwari-blog-error.log  # 查看错误日志
 ```
 
 ## 总结
@@ -218,3 +259,4 @@ tail -f /var/log/fuwari-blog.log  # 查看日志
 - 构建在 GitHub 云端完成，服务器不需要装 pnpm、Node.js 构建工具
 - 服务器只装 `serve` + Nginx + Supervisor，职责单一
 - 推代码 = 上线，零手动操作
+- **Windows 用户注意**：SSH 密钥认证有 CRLF 坑，用密码认证更省心
