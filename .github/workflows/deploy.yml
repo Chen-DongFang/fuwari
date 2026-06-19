@@ -25,17 +25,23 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Deploy to server
-        uses: burnett01/rsync-deployments@7.0.1
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
-          switches: -avz --delete
-          path: dist/
-          remote_path: /var/www/yunxing.fun/
-          remote_host: ${{ secrets.SERVER_HOST }}
-          remote_port: ${{ secrets.SERVER_PORT }}
-          remote_user: ${{ secrets.SERVER_USER }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          remote_key_pass: ""
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "dist/*"
+          target: "/var/www/yunxing.fun/"
+          strip_components: 1
+          overwrite: true
 
       - name: Restart blog service
         uses: appleboy/ssh-action@v1
