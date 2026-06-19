@@ -6,21 +6,21 @@ import { url } from "../utils/url-utils";
 const currentYear = new Date().getFullYear();
 ---
 
-<div class="relative my-10 mx-32">
+<div class="relative my-10 mx-4 md:mx-32">
     <!-- Gradient line divider -->
     <div class="h-[1px] bg-gradient-to-r from-transparent via-[var(--cyber-cyan)] to-transparent opacity-30"></div>
 </div>
 
-<div class="relative mb-12 mx-32 rounded-2xl overflow-hidden" style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.04); backdrop-filter: blur(12px);">
+<div class="relative mb-12 mx-4 md:mx-32 rounded-2xl overflow-hidden" style="background: var(--bg-card); border: 1px solid rgba(255,255,255,0.04); backdrop-filter: blur(12px);">
     <!-- Top glow line -->
     <div class="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--cyber-pink)] to-transparent opacity-40"></div>
 
-    <div class="py-8 px-6 flex flex-col items-center justify-center">
-        <div class="text-sm text-center" style="color: rgba(255,255,255,0.35);">
+    <div class="py-6 md:py-8 px-4 md:px-6 flex flex-col items-center justify-center">
+        <div class="text-xs md:text-sm text-center leading-relaxed" style="color: rgba(255,255,255,0.35);">
             &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. 保留所有权利
-            <span class="mx-2 text-[var(--cyber-cyan)] opacity-50">/</span>
+            <span class="mx-1 md:mx-2 text-[var(--cyber-cyan)] opacity-50">/</span>
             <a class="font-medium hover:text-[var(--cyber-cyan)] transition-colors" target="_blank" href={url('rss.xml')}>RSS</a>
-            <span class="mx-2 text-[var(--cyber-cyan)] opacity-50">/</span>
+            <span class="mx-1 md:mx-2 text-[var(--cyber-cyan)] opacity-50">/</span>
             <a class="font-medium hover:text-[var(--cyber-cyan)] transition-colors" target="_blank" href={url('sitemap-index.xml')}>站点地图</a>
         </div>
     </div>

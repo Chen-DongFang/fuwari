@@ -4,11 +4,11 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 
 <MainGridLayout title="诗词" description="陈云行诗词合集 - 东方杂集">
 
-<div id="poetry-hero" class="poetry-hero relative rounded-2xl overflow-hidden mb-8 p-8 md:p-12" style="background: linear-gradient(135deg, rgba(10,10,30,0.8), rgba(20,10,30,0.9)); border: 1px solid rgba(255,200,0,0.15);">
-  <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 rounded-tl-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
-  <div class="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 rounded-tr-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
-  <div class="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 rounded-bl-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
-  <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 rounded-br-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
+<div id="poetry-hero" class="poetry-hero relative rounded-2xl overflow-hidden mb-8 p-4 md:p-12" style="background: linear-gradient(135deg, rgba(10,10,30,0.8), rgba(20,10,30,0.9)); border: 1px solid rgba(255,200,0,0.15);">
+  <div class="absolute top-0 left-0 w-10 h-10 md:w-16 md:h-16 border-t-2 border-l-2 rounded-tl-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
+  <div class="absolute top-0 right-0 w-10 h-10 md:w-16 md:h-16 border-t-2 border-r-2 rounded-tr-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
+  <div class="absolute bottom-0 left-0 w-10 h-10 md:w-16 md:h-16 border-b-2 border-l-2 rounded-bl-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
+  <div class="absolute bottom-0 right-0 w-10 h-10 md:w-16 md:h-16 border-b-2 border-r-2 rounded-br-2xl" style="border-color: rgba(255,200,0,0.3);"></div>
   <div class="text-center relative z-10">
     <h1 class="text-4xl md:text-5xl font-bold mb-4" style="background: linear-gradient(135deg, var(--cyber-gold), var(--cyber-pink), var(--cyber-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 200%; animation: gradient-flow 6s ease infinite;">《东方杂集》</h1>
     <p class="text-lg mb-2" style="color: rgba(255,255,255,0.5);">往昔诗词合集 · 陈云行 著</p>
@@ -52,10 +52,10 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
     const content = document.getElementById('poetry-content');
     content.innerHTML = sectionPoems.map(section => `
       <div class="mb-16">
-        <div class="relative mb-8 py-6">
-          <div class="flex items-center gap-6">
-            <div class="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center relative" style="background: linear-gradient(135deg, rgba(255,200,0,0.1), rgba(255,0,102,0.05)); border: 1px solid rgba(255,200,0,0.2);">
-              <span class="text-2xl md:text-3xl font-bold" style="color: var(--cyber-gold);">${section.label}</span>
+        <div class="relative mb-6 md:mb-8 py-4 md:py-6">
+          <div class="flex items-center gap-3 md:gap-6">
+            <div class="flex-shrink-0 w-12 h-12 md:w-20 md:h-20 rounded-full flex items-center justify-center relative" style="background: linear-gradient(135deg, rgba(255,200,0,0.1), rgba(255,0,102,0.05)); border: 1px solid rgba(255,200,0,0.2);">
+              <span class="text-xl md:text-3xl font-bold" style="color: var(--cyber-gold);">${section.label}</span>
               <div class="absolute inset-0 rounded-full" style="box-shadow: 0 0 30px rgba(255,200,0,0.1);"></div>
             </div>
             <div>
@@ -70,18 +70,18 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
             <div class="poem-card group relative rounded-2xl overflow-hidden transition-all duration-500" style="background: rgba(10,10,30,0.4); border: 1px solid rgba(255,255,255,0.04); backdrop-filter: blur(10px);">
               <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: radial-gradient(ellipse at 50% 0%, rgba(255,200,0,0.03) 0%, transparent 70%);"></div>
               <div class="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: linear-gradient(90deg, transparent, rgba(255,200,0,0.4), transparent);"></div>
-              <div class="relative p-6 md:p-8">
-                <div class="flex items-center justify-between mb-5">
-                  <div class="flex items-center gap-4">
-                    <span class="text-sm font-mono px-3 py-1 rounded-lg" style="background: rgba(255,200,0,0.08); color: rgba(255,200,0,0.7); border: 1px solid rgba(255,200,0,0.12);">No.${String(poem.id).padStart(2, '0')}</span>
-                    <h3 class="text-xl md:text-2xl font-bold" style="color: rgba(255,255,255,0.9);">${poem.title}</h3>
+              <div class="relative p-4 md:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-5">
+                  <div class="flex items-center gap-2 md:gap-4">
+                    <span class="text-xs md:text-sm font-mono px-2 md:px-3 py-0.5 md:py-1 rounded-lg" style="background: rgba(255,200,0,0.08); color: rgba(255,200,0,0.7); border: 1px solid rgba(255,200,0,0.12);">No.${String(poem.id).padStart(2, '0')}</span>
+                    <h3 class="text-lg md:text-2xl font-bold" style="color: rgba(255,255,255,0.9);">${poem.title}</h3>
                   </div>
-                  <span class="text-sm font-mono" style="color: rgba(255,255,255,0.2);">${poem.date}</span>
+                  <span class="text-xs md:text-sm font-mono flex-shrink-0" style="color: rgba(255,255,255,0.2);">${poem.date}</span>
                 </div>
-                <div class="poem-body pl-6 md:pl-8 mb-5" style="border-left: 3px solid rgba(255,200,0,0.25);">
-                  <div style="color: rgba(255,255,255,0.75); line-height: 2.2; white-space: pre-line; font-size: 1.1rem; font-family: serif; letter-spacing: 0.05em;">${poem.content}</div>
+                <div class="poem-body pl-4 md:pl-8 mb-4 md:mb-5" style="border-left: 3px solid rgba(255,200,0,0.25);">
+                  <div style="color: rgba(255,255,255,0.75); line-height: 2.2; white-space: pre-line; font-size: 0.95rem; font-family: serif; letter-spacing: 0.05em;">${poem.content}</div>
                 </div>
-                ${poem.note ? `<div class="pl-6 md:pl-8 flex items-start gap-2" style="border-left: 3px solid rgba(0,200,255,0.2);"><span class="text-xs flex-shrink-0 mt-0.5 px-2 py-0.5 rounded" style="background: rgba(0,200,255,0.08); color: rgba(0,200,255,0.6);">创作札记</span><p class="text-sm" style="color: rgba(255,255,255,0.35); line-height: 1.8;">${poem.note}</p></div>` : ''}
+                ${poem.note ? `<div class="pl-4 md:pl-8 flex items-start gap-2" style="border-left: 3px solid rgba(0,200,255,0.2);"><span class="text-xs flex-shrink-0 mt-0.5 px-2 py-0.5 rounded" style="background: rgba(0,200,255,0.08); color: rgba(0,200,255,0.6);">创作札记</span><p class="text-xs md:text-sm" style="color: rgba(255,255,255,0.35); line-height: 1.8;">${poem.note}</p></div>` : ''}
               </div>
             </div>
           `).join('')}
