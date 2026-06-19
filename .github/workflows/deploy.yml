@@ -31,6 +31,10 @@ jobs:
       - name: Deploy static files
         run: |
           sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+            --exclude='data/comments/' \
+            --exclude='data/poems.json' \
+            --exclude='data/site-data.json' \
+            --exclude='data/projects.json' \
             -e "ssh -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
@@ -43,20 +47,16 @@ jobs:
             -e "ssh -o StrictHostKeyChecking=no" \
             api-server.js \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/blog-api/
-          sshpass -p "$SERVER_PASSWORD" rsync -avz \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            public/data/ \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/blog-api/data/
-          sshpass -p "$SERVER_PASSWORD" rsync -avz \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            src/data/ \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/blog-api/src-data/
         env:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 
-      - name: Deploy data files to public
+      - name: Deploy data files to public (preserve server data)
         run: |
           sshpass -p "$SERVER_PASSWORD" rsync -avz \
+            --exclude='comments/' \
+            --exclude='poems.json' \
+            --exclude='site-data.json' \
+            --exclude='projects.json' \
             -e "ssh -o StrictHostKeyChecking=no" \
             public/data/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/data/

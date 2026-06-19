@@ -1,0 +1,215 @@
+---
+interface Props {
+  type: 'post' | 'poem' | 'guestbook';
+  id: string;
+  title?: string;
+}
+const { type, id, title = '评论区' } = Astro.props;
+---
+
+<div class="comment-section mt-8 p-5 md:p-7 rounded-2xl" style="background: rgba(10,10,30,0.4); border: 1px solid rgba(0,200,255,0.08); backdrop-filter: blur(10px);" data-type={type} data-id={id}>
+  <div class="flex items-center gap-3 mb-5">
+    <div class="w-1 h-5 rounded-full" style="background: linear-gradient(180deg, var(--cyber-cyan), var(--cyber-pink));"></div>
+    <h3 class="text-lg font-bold" style="color: rgba(255,255,255,0.85);">{title}</h3>
+    <span class="comment-count text-xs px-2 py-0.5 rounded-full" style="background: rgba(0,200,255,0.1); color: rgba(0,200,255,0.6);">0</span>
+  </div>
+
+  <div class="comment-list space-y-4 mb-6">
+    <div class="comment-empty text-center py-8" style="color: rgba(255,255,255,0.25);">
+      <p class="text-sm">暂无评论，来说点什么吧~</p>
+    </div>
+  </div>
+
+  <div class="comment-form rounded-xl p-4 md:p-5" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+    <div class="flex flex-col sm:flex-row gap-3 mb-3">
+      <input type="text" class="comment-name flex-1 px-3 py-2 rounded-lg text-sm outline-none" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);" placeholder="你的昵称" maxlength="50">
+    </div>
+    <textarea class="comment-input w-full px-3 py-2 rounded-lg text-sm outline-none resize-none mb-3" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); min-height: 80px;" placeholder="写下你的评论..." maxlength="2000"></textarea>
+    <div class="flex justify-between items-center">
+      <span class="comment-status text-xs" style="color: rgba(255,255,255,0.3);"></span>
+      <button class="comment-submit px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300" style="background: linear-gradient(135deg, rgba(0,200,255,0.2), rgba(0,200,255,0.1)); border: 1px solid rgba(0,200,255,0.3); color: #00C8FF;">
+        发表评论
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .comment-section .comment-submit:hover {
+    background: linear-gradient(135deg, rgba(0,200,255,0.3), rgba(0,200,255,0.15));
+    box-shadow: 0 0 20px rgba(0,200,255,0.15);
+    transform: translateY(-1px);
+  }
+  .comment-section .comment-submit:active {
+    transform: scale(0.97);
+  }
+  .comment-section .comment-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .comment-item {
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.2s;
+  }
+  .comment-item:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+  }
+  .comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+</style>
+
+<script is:inline>
+(function() {
+  document.querySelectorAll('.comment-section').forEach(section => {
+    const type = section.dataset.type;
+    const id = section.dataset.id;
+    const list = section.querySelector('.comment-list');
+    const countEl = section.querySelector('.comment-count');
+    const emptyEl = section.querySelector('.comment-empty');
+    const nameInput = section.querySelector('.comment-name');
+    const contentInput = section.querySelector('.comment-input');
+    const submitBtn = section.querySelector('.comment-submit');
+    const statusEl = section.querySelector('.comment-status');
+
+    const colors = ['#00C8FF', '#FF2D95', '#B44DFF', '#FFC800', '#00FF88', '#FF6600'];
+    function getColor(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    function timeAgo(ts) {
+      const diff = Date.now() - new Date(ts).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return '刚刚';
+      if (mins < 60) return mins + ' 分钟前';
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + ' 小时前';
+      const days = Math.floor(hours / 24);
+      if (days < 30) return days + ' 天前';
+      return new Date(ts).toLocaleDateString('zh-CN');
+    }
+
+    function renderComment(c) {
+      const color = getColor(c.name);
+      return '<div class="comment-item">' +
+        '<div class="flex items-start gap-3">' +
+          '<div class="comment-avatar" style="background: ' + color + '22; color: ' + color + '; border: 1px solid ' + color + '33;">' + c.name.charAt(0) + '</div>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 mb-1">' +
+              '<span class="text-sm font-bold" style="color: ' + color + ';">' + c.name + '</span>' +
+              '<span class="text-xs" style="color: rgba(255,255,255,0.25);">' + timeAgo(c.timestamp) + '</span>' +
+            '</div>' +
+            '<p class="text-sm leading-relaxed" style="color: rgba(255,255,255,0.6);">' + c.content + '</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    async function loadComments() {
+      try {
+        let data;
+        // Try API first
+        try {
+          let url;
+          if (type === 'guestbook') { url = '/api/guestbook'; }
+          else { url = '/api/comments/' + type + '/' + encodeURIComponent(id); }
+          const r = await fetch(url);
+          if (r.ok) data = await r.json();
+        } catch {}
+        // Fallback to static JSON
+        if (!data) {
+          try {
+            let staticUrl;
+            if (type === 'guestbook') { staticUrl = '/data/comments/guestbook.json'; }
+            else { staticUrl = '/data/comments/' + type + '_' + id + '.json'; }
+            const r = await fetch(staticUrl);
+            if (r.ok) { data = { data: await r.json() }; }
+          } catch {}
+        }
+        if (!data) return;
+        const comments = data.data || [];
+
+        countEl.textContent = comments.length;
+
+        if (comments.length === 0) {
+          emptyEl.style.display = '';
+          return;
+        }
+
+        emptyEl.style.display = 'none';
+        list.innerHTML = comments.map(renderComment).join('');
+      } catch {}
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      const name = nameInput.value.trim();
+      const content = contentInput.value.trim();
+
+      if (!name) { statusEl.textContent = '请输入昵称'; statusEl.style.color = '#FF2D95'; return; }
+      if (!content) { statusEl.textContent = '请输入评论内容'; statusEl.style.color = '#FF2D95'; return; }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '发送中...';
+      statusEl.textContent = '';
+
+      try {
+        let url;
+        if (type === 'guestbook') {
+          url = '/api/guestbook';
+        } else {
+          url = '/api/comments/' + type + '/' + encodeURIComponent(id);
+        }
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, content }),
+        });
+
+        if (r.ok) {
+          contentInput.value = '';
+          statusEl.textContent = '发表成功!';
+          statusEl.style.color = '#00FF88';
+          localStorage.setItem('comment_name', name);
+          await loadComments();
+        } else {
+          const err = await r.json();
+          statusEl.textContent = err.error || '发送失败';
+          statusEl.style.color = '#FF2D95';
+        }
+      } catch (e) {
+        statusEl.textContent = '网络错误，请稍后再试';
+        statusEl.style.color = '#FF2D95';
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = '发表评论';
+    });
+
+    contentInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        submitBtn.click();
+      }
+    });
+
+    const savedName = localStorage.getItem('comment_name');
+    if (savedName) nameInput.value = savedName;
+
+    loadComments();
+  });
+})();
+</script>
