@@ -146,32 +146,6 @@ const bannerOffset =
 			<div class="relative z-[7] flex flex-col items-center gap-6" style="width:min(80vw,600px);">
 				<div id="loader-bar" style="width:100%;height:3px;background:rgba(0,200,255,0.1);border-radius:3px;overflow:hidden;opacity:0;transition:opacity 0.5s ease;">
 					<div id="loader-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00C8FF,#00FF88,#FFC800);border-radius:3px;transition:width 2s cubic-bezier(0.16,1,0.3,1) 0.3s;box-shadow:0 0 12px rgba(0,200,255,0.5),0 0 24px rgba(0,200,255,0.2);"></div>
-				</div>
-				<div class="relative">
-					<div id="loader-border" style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:clamp(240px,60vw,480px);height:1px;background:linear-gradient(90deg,transparent,#00C8FF,#FFC800,#00C8FF,transparent);opacity:0;transition:opacity 0.8s ease 1.2s;"></div>
-					<div id="loader-title" style="font-size:clamp(2rem,5.5vw,4rem);font-weight:700;letter-spacing:0.15em;color:#fff;text-shadow:0 0 20px rgba(0,200,255,0.9),0 0 60px rgba(0,200,255,0.5),0 0 120px rgba(0,200,255,0.3),0 0 200px rgba(0,200,255,0.15);opacity:0;transform:translateY(20px) scale(0.95);transition:all 1.2s cubic-bezier(0.16,1,0.3,1);font-family:Georgia,'Noto Serif SC',serif;white-space:nowrap;">欢迎来到东方的赛博世界</div>
-				</div>
-				<div id="loader-sub" style="font-size:clamp(0.85rem,2.2vw,1.15rem);letter-spacing:0.5em;color:rgba(0,200,255,0.8);text-shadow:0 0 15px rgba(0,200,255,0.6);opacity:0;transition:all 1s ease;text-transform:uppercase;font-family:sans-serif;">CYBER WORLD LOADING...</div>
-				<div class="flex items-center gap-4" style="opacity:0;" id="loader-bottom">
-					<span id="loader-pct" class="font-mono" style="color:rgba(0,255,136,0.6);font-size:0.85rem;letter-spacing:0.1em;text-shadow:0 0 8px rgba(0,255,136,0.3);min-width:40px;text-align:right;">0%</span>
-					<div id="loader-data" class="flex gap-4 font-mono tracking-wider" style="color:rgba(0,200,255,0.35);font-size:0.7rem;">
-						<span>SYS::INIT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>NET::CONNECT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>MEM::ALLOC</span>
-					</div>
-				</div>
-			</div>
-		</div>
-				<div class="relative">
-					<div id="loader-border" style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:clamp(240px,60vw,480px);height:1px;background:linear-gradient(90deg,transparent,#00C8FF,#FFC800,#00C8FF,transparent);opacity:0;transition:opacity 0.8s ease 1.2s;"></div>
-					<div id="loader-title" style="font-size:clamp(2rem,5.5vw,4rem);font-weight:700;letter-spacing:0.15em;color:#fff;text-shadow:0 0 20px rgba(0,200,255,0.9),0 0 60px rgba(0,200,255,0.5),0 0 120px rgba(0,200,255,0.3),0 0 200px rgba(0,200,255,0.15);opacity:0;transform:translateY(20px) scale(0.95);transition:all 1.2s cubic-bezier(0.16,1,0.3,1);font-family:Georgia,'Noto Serif SC',serif;white-space:nowrap;">欢迎来到东方的赛博世界</div>
-				</div>
-				<div id="loader-sub" style="font-size:clamp(0.85rem,2.2vw,1.15rem);letter-spacing:0.5em;color:rgba(0,200,255,0.8);text-shadow:0 0 15px rgba(0,200,255,0.6);opacity:0;transition:all 1s ease;text-transform:uppercase;font-family:sans-serif;">CYBER WORLD LOADING...</div>
-				<div class="flex items-center gap-4" style="opacity:0;" id="loader-bottom">
-					<span id="loader-pct" class="font-mono" style="color:rgba(0,255,136,0.6);font-size:0.85rem;letter-spacing:0.1em;text-shadow:0 0 8px rgba(0,255,136,0.3);min-width:40px;text-align:right;">0%</span>
-					<div id="loader-data" class="flex gap-4 font-mono tracking-wider" style="color:rgba(0,200,255,0.35);font-size:0.7rem;">
-						<span>SYS::INIT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>NET::CONNECT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>MEM::ALLOC</span>
-					</div>
-				</div>
-			</div>
 		</div>
 
 		<!-- Cyber Scanline Effect -->
@@ -213,6 +187,9 @@ const bannerOffset =
     var borderEl = document.getElementById('loader-border');
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var density = window.innerWidth < 600 ? 3 : 1;
+
+    // Safety: always restore scroll after 8 seconds max
+    setTimeout(function() { document.body.style.overflow = ''; }, 8000);
     function resize() {
       W = window.innerWidth; H = window.innerHeight;
       canvas.width = W * dpr; canvas.height = H * dpr;
@@ -715,6 +692,9 @@ const setup = () => {
             if (toc) {
                 toc.classList.remove('toc-not-ready')
             }
+
+            // Ensure scroll is always restored after transition
+            document.body.style.overflow = '';
         }, 200)
 	});
 }
