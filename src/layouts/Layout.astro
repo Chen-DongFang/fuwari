@@ -5,6 +5,7 @@ import "@fontsource/roboto/700.css";
 
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import BrightnessControl from "@components/BrightnessControl.astro";
+import MusicPlayer from "@components/MusicPlayer.astro";
 import { profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
@@ -181,6 +182,9 @@ const bannerOffset =
 
 		<!-- Brightness Control -->
 		<BrightnessControl></BrightnessControl>
+
+		<!-- Music Player -->
+		<MusicPlayer></MusicPlayer>
 
 		<ConfigCarrier></ConfigCarrier>
 		<slot />

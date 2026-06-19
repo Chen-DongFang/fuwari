@@ -32,3 +32,10 @@ yarn.lock
 
 # local assets
 素材/
+
+# temp screenshots & previews
+*.png
+*.jpg
+*.jpeg
+public/previews/
+.playwright-mcp/

@@ -1,0 +1,320 @@
+---
+---
+<div id="music-player" class="fixed top-16 right-3 z-50 md:top-20 md:right-6" style="display:none;">
+  <!-- Floating trigger button -->
+  <button id="music-trigger" class="w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95" style="background:rgba(10,10,30,0.85);border:1px solid rgba(0,247,255,0.2);backdrop-filter:blur(10px);box-shadow:0 0 15px rgba(0,247,255,0.1);">
+    <span id="music-trigger-icon" class="text-base md:text-xl">🎵</span>
+  </button>
+
+  <!-- Player panel -->
+  <div id="music-panel" class="absolute top-14 right-0 md:top-16 rounded-2xl overflow-hidden transition-all duration-400 opacity-0 pointer-events-none translate-y-2" style="width:min(320px,calc(100vw - 24px));background:rgba(10,10,20,0.92);border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(40px) saturate(150%);box-shadow:0 25px 60px -15px rgba(0,0,0,0.7),0 0 30px rgba(0,247,255,0.05);">
+    <div style="background:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0px,rgba(0,0,0,0.03) 1px,transparent 1px,transparent 3px);position:absolute;inset:0;pointer-events:none;z-index:1;"></div>
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 pt-4 pb-2 relative z-10">
+      <div class="flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full" style="background:#00ff88;opacity:0.7;" id="music-status-dot"></div>
+        <span style="font-size:10px;letter-spacing:0.15em;color:rgba(0,247,255,0.5);font-family:monospace;">NOW PLAYING</span>
+      </div>
+      <button id="music-close" class="w-6 h-6 flex items-center justify-center rounded-md transition-colors" style="color:rgba(255,255,255,0.3);">✕</button>
+    </div>
+
+    <!-- Cover + Info -->
+    <div class="flex flex-col items-center px-4 pb-3 relative z-10">
+      <div class="relative mb-3">
+        <!-- Vinyl disc -->
+        <div id="music-cover" class="relative mx-auto" style="width:clamp(100px,35vw,140px);height:clamp(100px,35vw,140px);">
+          <!-- Outer ring glow -->
+          <div id="music-cover-glow" class="absolute inset-[-6px] rounded-full transition-all duration-300" style="background:conic-gradient(from 0deg,#00f7ff,#ff00ff,#b44aff,#00ff88,#00f7ff);opacity:0;filter:blur(8px);"></div>
+          <!-- Vinyl body -->
+          <div id="music-vinyl" class="absolute inset-0 rounded-full" style="background:radial-gradient(circle at 50% 50%,#2a2a3a 0%,#111122 30%,#0a0a18 50%,#111122 70%,#0d0d1a 100%);box-shadow:0 0 20px rgba(0,0,0,0.5);transition:transform 0.3s;transform:rotate(0deg);">
+            <!-- Grooves -->
+            <div class="absolute inset-[8px] rounded-full" style="background:repeating-radial-gradient(circle at center,transparent 0px,transparent 3px,rgba(255,255,255,0.03) 3px,rgba(255,255,255,0.03) 4px);"></div>
+            <div class="absolute inset-[20px] rounded-full" style="background:repeating-radial-gradient(circle at center,transparent 0px,transparent 4px,rgba(255,255,255,0.02) 4px,rgba(255,255,255,0.02) 5px);"></div>
+            <!-- Inner color ring -->
+            <div id="music-cover-art" class="absolute inset-[32px] rounded-full overflow-hidden" style="box-shadow:inset 0 0 10px rgba(0,0,0,0.5);">
+              <div class="w-full h-full flex items-center justify-center" style="background:linear-gradient(135deg,#1a1a2e,#0a0a15);">
+                <span style="font-size:1.5rem;opacity:0.3;">♫</span>
+              </div>
+            </div>
+            <!-- Center hole -->
+            <div class="absolute left-1/2 top-1/2 w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2" style="background:#0a0a18;border:1px solid rgba(255,255,255,0.1);z-index:5;"></div>
+            <!-- Reflection -->
+            <div class="absolute inset-0 rounded-full pointer-events-none" style="background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 40%,transparent 60%,rgba(255,255,255,0.02) 100%);z-index:4;"></div>
+          </div>
+          <!-- Outer ring -->
+          <div class="absolute inset-[-2px] rounded-full pointer-events-none" style="border:2px solid rgba(255,255,255,0.06);z-index:3;"></div>
+        </div>
+      </div>
+      <div class="text-center w-full px-2">
+        <p id="music-title" class="text-sm font-bold truncate mb-0.5" style="color:rgba(255,255,255,0.85);text-shadow:0 0 20px rgba(255,255,255,0.15);">未播放</p>
+        <p id="music-artist" class="text-xs truncate" style="color:rgba(0,247,255,0.5);font-family:monospace;">添加音乐文件</p>
+      </div>
+    </div>
+
+    <!-- Visualizer -->
+    <div class="px-4 mb-2 relative z-10">
+      <canvas id="music-visualizer" width="288" height="32" style="width:100%;height:32px;border-radius:6px;"></canvas>
+    </div>
+
+    <!-- Progress -->
+    <div class="px-4 mb-2 relative z-10">
+      <input type="range" id="music-progress" value="0" min="0" max="100" step="0.1" class="w-full" style="-webkit-appearance:none;height:4px;border-radius:2px;background:rgba(0,247,255,0.12);cursor:pointer;outline:none;">
+      <div class="flex justify-between mt-1.5" style="font-size:10px;color:rgba(0,247,255,0.4);font-family:monospace;">
+        <span id="music-current">0:00</span>
+        <span id="music-total">0:00</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex items-center justify-center gap-5 px-4 pb-4 relative z-10">
+      <button id="music-shuffle" class="flex items-center justify-center w-8 h-8 transition-colors" style="color:rgba(255,255,255,0.3);">⇄</button>
+      <button id="music-prev" class="flex items-center justify-center w-8 h-8 transition-colors" style="color:rgba(255,255,255,0.6);">⏮</button>
+      <button id="music-play" class="w-12 h-12 rounded-full flex items-center justify-center transition-all" style="background:linear-gradient(135deg,#00f7ff,#ff00ff);box-shadow:0 4px 15px rgba(0,247,255,0.3);color:#fff;font-size:16px;">▶</button>
+      <button id="music-next" class="flex items-center justify-center w-8 h-8 transition-colors" style="color:rgba(255,255,255,0.6);">⏭</button>
+      <button id="music-repeat" class="flex items-center justify-center w-8 h-8 transition-colors" style="color:rgba(255,255,255,0.3);">↻</button>
+    </div>
+
+    <!-- Volume + Add -->
+    <div class="flex items-center justify-between px-4 pb-4 relative z-10">
+      <div class="flex items-center gap-2">
+        <span style="color:rgba(255,255,255,0.3);font-size:12px;" id="music-vol-icon">🔊</span>
+        <input type="range" id="music-volume" value="80" min="0" max="100" style="-webkit-appearance:none;width:60px;height:3px;border-radius:2px;background:rgba(0,247,255,0.12);cursor:pointer;">
+      </div>
+      <label class="flex items-center justify-center w-8 h-8 rounded-full cursor-pointer transition-colors" style="background:linear-gradient(135deg,rgba(0,247,255,0.15),rgba(255,0,255,0.1));font-size:12px;color:rgba(255,255,255,0.6);">
+        <input type="file" accept="audio/*" multiple id="music-file-input" style="display:none;">
+        ＋
+      </label>
+    </div>
+
+    <!-- Playlist -->
+    <div id="music-playlist" class="border-t px-4 py-3 max-h-40 overflow-y-auto relative z-10" style="border-color:rgba(255,255,255,0.05);display:none;">
+      <div id="music-playlist-items"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #music-progress::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+    background: linear-gradient(135deg,#00f7ff,#ff00ff); cursor: pointer;
+    box-shadow: 0 0 8px rgba(0,247,255,0.5);
+  }
+  #music-volume::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
+    background: #00f7ff; cursor: pointer; box-shadow: 0 0 6px rgba(0,247,255,0.4);
+  }
+  #music-panel.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  #music-trigger.playing { animation: pulse-glow 2s ease-in-out infinite; }
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 15px rgba(0,247,255,0.1); }
+    50% { box-shadow: 0 0 25px rgba(0,247,255,0.3), 0 0 40px rgba(255,0,255,0.1); }
+  }
+  @keyframes vinylSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .playlist-item-music { padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; border-left: 2px solid transparent; font-size: 12px; }
+  .playlist-item-music:hover { background: rgba(0,247,255,0.05); }
+  .playlist-item-music.active { background: rgba(0,247,255,0.08); border-left-color: #00f7ff; }
+</style>
+
+<script is:inline>
+(function() {
+  var DEFAULT_TRACKS = [
+    { url: '/music/乃万NINEONE、DiESi - 搬进我心里 (Prod.By DiESi).mp3', title: '搬进我心里', artist: '乃万 & DiESi' }
+  ];
+
+  var audio = new Audio();
+  audio.volume = 0.8;
+  var state = { playing: false, expanded: false, current: -1, tracks: [], volume: 0.8, muted: false, shuffle: false, repeat: 0 };
+  var audioCtx, analyser, sourceNode, gainNode;
+
+  function init() {
+    DEFAULT_TRACKS.forEach(function(t) { state.tracks.push(Object.assign({}, t, { cover: genCover(t.title) })); });
+    renderPlaylist();
+    if (state.tracks.length) loadTrack(0);
+  }
+
+  function genCover(s) {
+    var c = [['#667eea','#764ba2'],['#f093fb','#f5576c'],['#4facfe','#00f2fe'],['#43e97b','#38f9d7'],['#fa709a','#fee140'],['#00f7ff','#ff00ff']];
+    var h = 0; for (var i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i);
+    var p = c[Math.abs(h) % c.length];
+    return 'linear-gradient(135deg,' + p[0] + ',' + p[1] + ')';
+  }
+
+  function initAudioCtx() {
+    if (audioCtx) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.8;
+      gainNode = audioCtx.createGain();
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      sourceNode.connect(analyser);
+      analyser.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      gainNode.gain.value = state.volume;
+    } catch(e) {}
+  }
+
+  function loadTrack(i) {
+    if (i < 0 || i >= state.tracks.length) return;
+    state.current = i;
+    audio.src = state.tracks[i].url;
+    document.getElementById('music-title').textContent = state.tracks[i].title;
+    document.getElementById('music-artist').textContent = state.tracks[i].artist;
+    document.getElementById('music-cover-art').style.background = state.tracks[i].cover;
+    audio.onloadedmetadata = function() { document.getElementById('music-total').textContent = fmt(audio.duration); };
+    renderPlaylist();
+  }
+
+  function togglePlay() {
+    if (!state.tracks.length) return;
+    if (state.current === -1) loadTrack(0);
+    initAudioCtx();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    state.playing = !state.playing;
+    if (state.playing) audio.play().catch(function() { state.playing = false; updateUI(); });
+    else audio.pause();
+    updateUI();
+  }
+
+  function prevTrack() {
+    if (!state.tracks.length) return;
+    loadTrack(state.current <= 0 ? state.tracks.length - 1 : state.current - 1);
+    if (state.playing) audio.play().catch(function(){});
+  }
+
+  function nextTrack() {
+    if (!state.tracks.length) return;
+    var next = state.shuffle ? Math.floor(Math.random() * state.tracks.length) : (state.current + 1) % state.tracks.length;
+    loadTrack(next);
+    if (state.playing) audio.play().catch(function(){});
+  }
+
+  function fmt(s) { var m = Math.floor(s / 60); var sec = Math.floor(s % 60); return m + ':' + (sec < 10 ? '0' : '') + sec; }
+
+  function updateUI() {
+    document.getElementById('music-play').innerHTML = state.playing ? '⏸' : '▶';
+    document.getElementById('music-trigger-icon').innerHTML = state.playing ? '🎶' : '🎵';
+    document.getElementById('music-trigger').classList.toggle('playing', state.playing);
+    document.getElementById('music-status-dot').style.background = state.playing ? '#00ff88' : 'rgba(255,255,255,0.2)';
+    // Vinyl rotation
+    var vinyl = document.getElementById('music-vinyl');
+    var glow = document.getElementById('music-cover-glow');
+    if (state.playing) {
+      vinyl.style.animation = 'vinylSpin 3s linear infinite';
+      glow.style.opacity = '0.35';
+    } else {
+      vinyl.style.animation = 'none';
+      glow.style.opacity = '0';
+    }
+  }
+
+  function renderPlaylist() {
+    var el = document.getElementById('music-playlist-items');
+    el.innerHTML = state.tracks.map(function(t, i) {
+      return '<div class="playlist-item-music' + (i === state.current ? ' active' : '') + '" onclick="window._mp.selectTrack(' + i + ')">' +
+        '<div style="color:rgba(255,255,255,0.8);font-weight:500;">' + t.title + '</div>' +
+        '<div style="color:rgba(0,247,255,0.4);font-size:11px;font-family:monospace;">' + t.artist + '</div></div>';
+    }).join('');
+    document.getElementById('music-playlist').style.display = state.tracks.length > 0 ? 'block' : 'none';
+  }
+
+  // Visualizer
+  var vizCanvas, vizCtx;
+  function drawViz() {
+    if (!analyser || !vizCanvas) { requestAnimationFrame(drawViz); return; }
+    var data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+    var bw = vizCanvas.width / data.length;
+    var bassSum = 0;
+    for (var i = 0; i < data.length; i++) {
+      var h = (data[i] / 255) * vizCanvas.height;
+      var hue = 180 + (i / data.length) * 120;
+      vizCtx.fillStyle = 'hsla(' + hue + ',100%,60%,0.6)';
+      vizCtx.fillRect(i * bw + 1, vizCanvas.height - h, bw - 2, h);
+      if (i < 8) bassSum += data[i];
+    }
+    // Pulse vinyl glow with bass
+    var bassLevel = bassSum / (8 * 255);
+    var glow = document.getElementById('music-cover-glow');
+    if (glow && state.playing) {
+      glow.style.opacity = 0.2 + bassLevel * 0.5;
+      glow.style.filter = 'blur(' + (6 + bassLevel * 8) + 'px)';
+    }
+    // Scale vinyl slightly with bass
+    var vinyl = document.getElementById('music-vinyl');
+    if (vinyl && state.playing) {
+      var scale = 1 + bassLevel * 0.03;
+      vinyl.style.transform = 'scale(' + scale + ')';
+    }
+    requestAnimationFrame(drawViz);
+  }
+
+  // Audio events
+  audio.ontimeupdate = function() {
+    if (!audio.duration) return;
+    document.getElementById('music-progress').value = (audio.currentTime / audio.duration) * 100;
+    document.getElementById('music-current').textContent = fmt(audio.currentTime);
+  };
+  audio.onended = function() {
+    if (state.repeat === 2) { audio.currentTime = 0; audio.play(); }
+    else if (state.repeat === 1 || state.current < state.tracks.length - 1) nextTrack();
+    else { state.playing = false; updateUI(); }
+  };
+
+  // Controls
+  document.getElementById('music-trigger').onclick = function() {
+    state.expanded = !state.expanded;
+    document.getElementById('music-panel').classList.toggle('show', state.expanded);
+  };
+  document.getElementById('music-close').onclick = function() {
+    state.expanded = false;
+    document.getElementById('music-panel').classList.remove('show');
+  };
+  document.getElementById('music-play').onclick = togglePlay;
+  document.getElementById('music-prev').onclick = prevTrack;
+  document.getElementById('music-next').onclick = nextTrack;
+  document.getElementById('music-progress').oninput = function() { if (audio.duration) audio.currentTime = (this.value / 100) * audio.duration; };
+  document.getElementById('music-volume').oninput = function() {
+    state.volume = this.value / 100;
+    audio.volume = state.volume;
+    if (gainNode) gainNode.gain.value = state.volume;
+    document.getElementById('music-vol-icon').textContent = state.volume === 0 ? '🔇' : state.volume < 0.5 ? '🔉' : '🔊';
+  };
+  document.getElementById('music-shuffle').onclick = function() {
+    state.shuffle = !state.shuffle;
+    this.style.color = state.shuffle ? '#00f7ff' : 'rgba(255,255,255,0.3)';
+  };
+  document.getElementById('music-repeat').onclick = function() {
+    state.repeat = (state.repeat + 1) % 3;
+    this.style.color = state.repeat === 0 ? 'rgba(255,255,255,0.3)' : state.repeat === 1 ? '#ff2d95' : '#00f7ff';
+    this.innerHTML = state.repeat === 2 ? '↻<sup style="font-size:8px;">1</sup>' : '↻';
+  };
+  document.getElementById('music-file-input').onchange = function(e) {
+    var files = Array.from(e.target.files);
+    if (!files.length) return;
+    initAudioCtx();
+    files.forEach(function(f) {
+      var url = URL.createObjectURL(f);
+      var name = f.name.replace(/\.[^/.]+$/, '');
+      var parts = name.split(' - ');
+      state.tracks.push({ url: url, title: parts[1] || name, artist: parts[0] || '未知', cover: genCover(f.name) });
+    });
+    renderPlaylist();
+    if (state.current === -1 && state.tracks.length) { loadTrack(0); setTimeout(togglePlay, 150); }
+    e.target.value = '';
+  };
+
+  window._mp = { selectTrack: function(i) { loadTrack(i); togglePlay(); } };
+
+  // Init
+  vizCanvas = document.getElementById('music-visualizer');
+  vizCtx = vizCanvas.getContext('2d');
+  document.getElementById('music-player').style.display = 'block';
+  init();
+  drawViz();
+})();
+</script>
