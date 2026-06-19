@@ -283,3 +283,123 @@
     opacity: 1;
     transform: translateY(0);
 }
+
+/* === Category Card Variants === */
+
+/* --- 技术 Tech: Cyan/Blue --- */
+.card-cat-tech {
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, #00C8FF, #0066FF) 1;
+    background: linear-gradient(135deg, rgba(0,200,255,0.03), transparent 40%);
+}
+.card-cat-tech:hover {
+    box-shadow: 0 0 30px rgba(0,200,255,0.2), 0 4px 24px rgba(0,0,0,0.4);
+    border-image: linear-gradient(180deg, #00C8FF, #0066FF, #00C8FF) 1;
+    background: linear-gradient(135deg, rgba(0,200,255,0.06), transparent 50%);
+}
+.card-cat-tech::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle at top right, rgba(0,200,255,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s;
+    opacity: 0;
+}
+.card-cat-tech:hover::after {
+    opacity: 1;
+}
+.card-cat-tech .meta-icon {
+    background: rgba(0,200,255,0.12);
+    border-color: rgba(0,200,255,0.18);
+    color: #00C8FF;
+}
+.card-cat-tech::before {
+    background: linear-gradient(90deg, transparent, #00C8FF, #0066FF, transparent);
+}
+
+/* --- 生活 Life: Gold/Amber --- */
+.card-cat-life {
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, #FFC800, #FF6600) 1;
+    background: linear-gradient(135deg, rgba(255,200,0,0.03), transparent 40%);
+}
+.card-cat-life:hover {
+    box-shadow: 0 0 30px rgba(255,200,0,0.15), 0 4px 24px rgba(0,0,0,0.4);
+    border-image: linear-gradient(180deg, #FFC800, #FF6600, #FFC800) 1;
+    background: linear-gradient(135deg, rgba(255,200,0,0.06), transparent 50%);
+}
+.card-cat-life::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle at top right, rgba(255,200,0,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s;
+    opacity: 0;
+}
+.card-cat-life:hover::after {
+    opacity: 1;
+}
+.card-cat-life .meta-icon {
+    background: rgba(255,200,0,0.12);
+    border-color: rgba(255,200,0,0.18);
+    color: #FFC800;
+}
+.card-cat-life::before {
+    background: linear-gradient(90deg, transparent, #FFC800, #FF6600, transparent);
+}
+
+/* --- 随笔/文学 Literary: Pink/Purple --- */
+.card-cat-literary {
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, #FF0066, #8A2BE2) 1;
+    background: linear-gradient(135deg, rgba(255,0,102,0.03), transparent 40%);
+}
+.card-cat-literary:hover {
+    box-shadow: 0 0 30px rgba(255,0,102,0.15), 0 4px 24px rgba(0,0,0,0.4);
+    border-image: linear-gradient(180deg, #FF0066, #8A2BE2, #FF0066) 1;
+    background: linear-gradient(135deg, rgba(255,0,102,0.06), transparent 50%);
+}
+.card-cat-literary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle at top right, rgba(255,0,102,0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s;
+    opacity: 0;
+}
+.card-cat-literary:hover::after {
+    opacity: 1;
+}
+.card-cat-literary .meta-icon {
+    background: rgba(255,0,102,0.12);
+    border-color: rgba(255,0,102,0.18);
+    color: #FF0066;
+}
+.card-cat-literary::before {
+    background: linear-gradient(90deg, transparent, #FF0066, #8A2BE2, transparent);
+}
+
+/* --- 默认 Default: Cyan (existing style) --- */
+.card-cat-default {
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, var(--cyber-cyan), var(--cyber-pink)) 1;
+}
+.card-cat-default:hover {
+    box-shadow: 0 0 25px rgba(0,200,255,0.1), 0 4px 20px rgba(0,0,0,0.3);
+    border-image: linear-gradient(180deg, var(--cyber-cyan), var(--cyber-pink), var(--cyber-cyan)) 1;
+}

@@ -41,19 +41,39 @@ const hasCover = image !== undefined && image !== null && image !== "";
 const coverWidth = "28%";
 
 const { remarkPluginFrontmatter } = await entry.render();
+
+const categoryClass = category === "技术" ? "card-cat-tech" 
+	: category === "生活" ? "card-cat-life" 
+	: category === "随笔" ? "card-cat-literary"
+	: "card-cat-default";
+
+const catAccent = category === "技术" ? "#00C8FF" 
+	: category === "生活" ? "#FFC800" 
+	: category === "随笔" ? "#FF0066"
+	: "var(--cyber-cyan)";
+
+const catAccent2 = category === "技术" ? "#0066FF" 
+	: category === "生活" ? "#FF6600" 
+	: category === "随笔" ? "#8A2BE2"
+	: "var(--cyber-pink)";
+
+const catHover = category === "技术" ? "#00C8FF" 
+	: category === "生活" ? "#FFC800" 
+	: category === "随笔" ? "#FF0066"
+	: "var(--cyber-pink)";
 ---
-<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative group/card", className]} style={style}>
+<div class:list={["card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative group/card", categoryClass, className]} style={`--cat-accent: ${catAccent}; --cat-accent2: ${catAccent2}; --cat-hover: ${catHover}; ${style}`}>
     <div class:list={["pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative", {"w-full md:w-[calc(100%_-_52px_-_12px)]": !hasCover, "w-full md:w-[calc(100%_-_var(--coverWidth)_-_12px)]": hasCover}]}>
         <a href={url}
-           class="transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-[var(--cyber-pink)]
+           class="transition group w-full block font-bold mb-3 text-xl text-90
+        hover:text-[var(--cat-hover)]
         active:text-[var(--title-active)]
-        before:w-1 before:h-5 before:rounded-md before:bg-gradient-to-b before:from-[var(--cyber-cyan)] before:to-[var(--cyber-pink)]
-        before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block
+        before:w-1 before:h-4 before:rounded-md before:bg-gradient-to-b before:from-[var(--cat-accent)] before:to-[var(--cat-accent2)]
+        before:absolute before:top-[27px] before:left-[18px] before:hidden md:before:block
         ">
             {title}
-            <Icon class="inline text-[2rem] text-[var(--cyber-cyan)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
-            <Icon class="text-[var(--cyber-cyan)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
+            <Icon class="inline text-[1.25rem] text-[var(--cat-accent)] md:hidden translate-y-0.5 absolute" name="material-symbols:chevron-right-rounded" ></Icon>
+            <Icon class="text-[var(--cat-accent)] text-[1.25rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" name="material-symbols:chevron-right-rounded"></Icon>
         </a>
 
         <!-- metadata -->
@@ -69,7 +89,7 @@ const { remarkPluginFrontmatter } = await entry.render();
             <div>
                 {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
             </div>
-            <div class="text-[var(--cyber-cyan)] opacity-40">|</div>
+            <div class="text-[var(--cat-accent)] opacity-40">|</div>
             <div>
                 {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
             </div>

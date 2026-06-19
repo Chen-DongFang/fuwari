@@ -1,0 +1,55 @@
+{
+  "site": {
+    "title": "陈东方的个人博客空间",
+    "subtitle": "万千芳华入盏中，举杯共赏论红尘。",
+    "lang": "zh_CN",
+    "banner": {
+      "enable": false,
+      "src": "",
+      "position": "center"
+    },
+    "toc": {
+      "enable": true,
+      "depth": 2
+    }
+  },
+  "profile": {
+    "name": "陈东方",
+    "bio": "盛夏的蝉鸣难以颤动孤寂的心，唯有热爱的薪火，总在寒夜里点燃那片潮湿的魂。",
+    "avatar": "assets/images/avatar.jpg"
+  },
+  "social": [
+    {
+      "name": "GitHub",
+      "icon": "fa6-brands:github",
+      "url": "https://github.com/Chen-DongFang"
+    },
+    {
+      "name": "QQ空间",
+      "icon": "fa6-brands:qq",
+      "url": "https://user.qzone.qq.com/2873044836"
+    },
+    {
+      "name": "哔哩哔哩",
+      "icon": "fa6-brands:bilibili",
+      "url": "https://space.bilibili.com/110526898"
+    },
+    {
+      "name": "Steam",
+      "icon": "fa6-brands:steam",
+      "url": "https://store.steampowered.com"
+    }
+  ],
+  "navbar": [
+    { "type": "home", "name": "首页", "url": "/" },
+    { "type": "archive", "name": "归档", "url": "/archive" },
+    { "type": "custom", "name": "诗词", "url": "/poetry/" },
+    { "type": "about", "name": "关于", "url": "/about" },
+    { "type": "custom", "name": "GitHub", "url": "https://github.com/Chen-DongFang", "external": true }
+  ],
+  "license": {
+    "enable": true,
+    "name": "CC BY-NC-SA 4.0",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  }
+}

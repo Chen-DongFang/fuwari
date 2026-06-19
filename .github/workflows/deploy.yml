@@ -28,19 +28,33 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get install -y sshpass
 
-      - name: Deploy via rsync
+      - name: Deploy static files
         run: |
           sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
             -e "ssh -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
-        env:
-          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
 
-      - name: Restart blog
+      - name: Deploy API server
+        run: |
+          sshpass -p "$SERVER_PASSWORD" rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            api-server.js \
+            public/data/ \
+            src/data/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/blog-api/
+
+      - name: Deploy data files to public
+        run: |
+          sshpass -p "$SERVER_PASSWORD" rsync -avz \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            public/data/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/data/
+
+      - name: Restart services
         run: |
           sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "supervisorctl restart fuwari-blog"
+            "supervisorctl restart fuwari-blog && supervisorctl restart blog-api"
         env:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
