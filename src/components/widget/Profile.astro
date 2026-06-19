@@ -46,7 +46,7 @@ const config = profileConfig;
 (function() {
   async function loadDynamicProfile() {
     try {
-      const r = await fetch('/data/site-data.json?t=' + Date.now());
+      const r = await fetch('/api/site-data?t=' + Date.now());
       if (!r.ok) return;
       const data = await r.json();
       if (data.social && data.social.length > 0) {

@@ -1,6 +1,6 @@
 ---
 title: "Claude Code 联网能力补全：CC-Web-MCP 优化实践"
-published: 2026-06-19
+published: 2026-06-17
 description: "基于 CC-Web-MCP 的优化版本，让 Claude Code 接入 DeepSeek、Qwen 等第三方模型时也能联网搜索。"
 tags: ["MCP", "Claude Code", "Python", "AI工具"]
 category: 技术

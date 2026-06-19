@@ -157,6 +157,19 @@ const server = http.createServer(async (req, res) => {
 
   // ========== Public Comment API (no auth) ==========
 
+  // GET /api/site-data — public endpoint for site data (no auth)
+  if (req.method === 'GET' && pathname === '/api/site-data') {
+    try {
+      const filePath = path.join(API_DIR, 'data', 'site-data.json');
+      if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        return send(res, 200, data);
+      }
+      return send(res, 200, {});
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
+
   // GET /api/comments/:type/:id — 获取评论
   if (req.method === 'GET' && /^\/api\/comments\/([^/]+)\/([^/]+)$/.test(pathname)) {
     const m = pathname.match(/^\/api\/comments\/([^/]+)\/([^/]+)$/);

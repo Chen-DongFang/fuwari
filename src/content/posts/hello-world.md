@@ -1,6 +1,6 @@
 ---
 title: 博客开站：在赛博世界里安一个家
-published: 2026-06-19
+published: 2026-06-16
 description: "个人博客正式上线，记录建站过程与初衷。"
 tags: ["随笔", "博客"]
 category: 生活

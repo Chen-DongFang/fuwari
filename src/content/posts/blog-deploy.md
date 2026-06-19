@@ -1,6 +1,6 @@
 ---
 title: "如何使用GitHub提交代码时服务器自动更新"
-published: 2026-06-19
+published: 2026-06-18
 description: "从零搭建个人博客的 CI/CD 自动部署流程，踩坑记录，推代码即上线。"
 tags: ["部署", "GitHub Actions", "Nginx", "Supervisor"]
 category: 技术
