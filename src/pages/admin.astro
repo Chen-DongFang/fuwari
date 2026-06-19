@@ -1357,8 +1357,8 @@ import Layout from "../layouts/Layout.astro";
 
   // ========== Music Management ==========
   let musicData = [];
-
   let musicApiAvailable = false;
+  let musicListenersBound = false;
 
   async function loadMusicTab() {
     try {
@@ -1373,28 +1373,31 @@ import Layout from "../layouts/Layout.astro";
     }
     renderMusicList();
 
-    // Upload area
-    const uploadArea = document.getElementById('music-upload-area');
-    const fileInput = document.getElementById('music-file');
-    uploadArea.addEventListener('click', (e) => { if (e.target === fileInput) return; fileInput.click(); });
-    fileInput.addEventListener('click', (e) => e.stopPropagation());
-    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
-    uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      uploadMusicFiles(e.dataTransfer.files);
-    });
-    fileInput.addEventListener('change', (e) => uploadMusicFiles(e.target.files));
+    // Upload area — only bind listeners once
+    if (!musicListenersBound) {
+      musicListenersBound = true;
+      const uploadArea = document.getElementById('music-upload-area');
+      const fileInput = document.getElementById('music-file');
+      uploadArea.addEventListener('click', (e) => { if (e.target === fileInput) return; fileInput.click(); });
+      fileInput.addEventListener('click', (e) => e.stopPropagation());
+      uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        uploadMusicFiles(e.dataTransfer.files);
+      });
+      fileInput.addEventListener('change', (e) => uploadMusicFiles(e.target.files));
 
-    document.getElementById('save-music').addEventListener('click', async () => {
-      if (musicApiAvailable) {
-        try {
-          await apiPost('music.json', musicData);
-          showToast('歌单已保存到服务器');
-        } catch (e) { showToast('保存失败: ' + e.message); }
-      } else {
-        showToast('本地模式无法保存，请导出后手动覆盖 music.json');
-      }
-    });
+      document.getElementById('save-music').addEventListener('click', async () => {
+        if (musicApiAvailable) {
+          try {
+            await apiPost('music.json', musicData);
+            showToast('歌单已保存到服务器');
+          } catch (e) { showToast('保存失败: ' + e.message); }
+        } else {
+          showToast('本地模式无法保存，请导出后手动覆盖 music.json');
+        }
+      });
+    }
   }
 
   function renderMusicList() {
@@ -1847,6 +1850,5 @@ import Layout from "../layouts/Layout.astro";
     });
   }
 
-  // Run
-  init();
+  // init() 已在上方 checkLogin() 分支中调用，此处不再重复
 </script>
