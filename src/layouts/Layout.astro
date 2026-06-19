@@ -138,6 +138,41 @@ const bannerOffset =
 	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
 		  data-overlayscrollbars-initialize
 	>
+		<!-- Loading Animation (first visit only) -->
+		<div id="cyber-loader" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background:#050510;display:none;">
+			<canvas id="loader-canvas" class="absolute inset-0" style="will-change:contents;"></canvas>
+			<div class="absolute inset-0 z-[2] pointer-events-none" style="background:radial-gradient(ellipse at center,transparent 30%,rgba(5,5,16,0.92) 70%),repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,200,255,0.012) 2px,rgba(0,200,255,0.012) 4px);animation:loaderScanShift 0.08s infinite;"></div>
+			<div class="relative z-[7] flex flex-col items-center gap-6" style="width:min(80vw,600px);">
+				<div id="loader-bar" style="width:100%;height:3px;background:rgba(0,200,255,0.1);border-radius:3px;overflow:hidden;opacity:0;transition:opacity 0.5s ease;">
+					<div id="loader-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00C8FF,#00FF88,#FFC800);border-radius:3px;transition:width 2s cubic-bezier(0.16,1,0.3,1) 0.3s;box-shadow:0 0 12px rgba(0,200,255,0.5),0 0 24px rgba(0,200,255,0.2);"></div>
+				</div>
+				<div class="relative">
+					<div id="loader-border" style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:clamp(240px,60vw,480px);height:1px;background:linear-gradient(90deg,transparent,#00C8FF,#FFC800,#00C8FF,transparent);opacity:0;transition:opacity 0.8s ease 1.2s;"></div>
+					<div id="loader-title" style="font-size:clamp(2rem,5.5vw,4rem);font-weight:700;letter-spacing:0.15em;color:#fff;text-shadow:0 0 20px rgba(0,200,255,0.9),0 0 60px rgba(0,200,255,0.5),0 0 120px rgba(0,200,255,0.3),0 0 200px rgba(0,200,255,0.15);opacity:0;transform:translateY(20px) scale(0.95);transition:all 1.2s cubic-bezier(0.16,1,0.3,1);font-family:Georgia,'Noto Serif SC',serif;white-space:nowrap;">欢迎来到东方的赛博世界</div>
+				</div>
+				<div id="loader-sub" style="font-size:clamp(0.85rem,2.2vw,1.15rem);letter-spacing:0.5em;color:rgba(0,200,255,0.8);text-shadow:0 0 15px rgba(0,200,255,0.6);opacity:0;transition:all 1s ease;text-transform:uppercase;font-family:sans-serif;">CYBER WORLD LOADING...</div>
+				<div class="flex items-center gap-4" style="opacity:0;" id="loader-bottom">
+					<span id="loader-pct" class="font-mono" style="color:rgba(0,255,136,0.6);font-size:0.85rem;letter-spacing:0.1em;text-shadow:0 0 8px rgba(0,255,136,0.3);min-width:40px;text-align:right;">0%</span>
+					<div id="loader-data" class="flex gap-4 font-mono tracking-wider" style="color:rgba(0,200,255,0.35);font-size:0.7rem;">
+						<span>SYS::INIT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>NET::CONNECT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>MEM::ALLOC</span>
+					</div>
+				</div>
+			</div>
+		</div>
+				<div class="relative">
+					<div id="loader-border" style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);width:clamp(240px,60vw,480px);height:1px;background:linear-gradient(90deg,transparent,#00C8FF,#FFC800,#00C8FF,transparent);opacity:0;transition:opacity 0.8s ease 1.2s;"></div>
+					<div id="loader-title" style="font-size:clamp(2rem,5.5vw,4rem);font-weight:700;letter-spacing:0.15em;color:#fff;text-shadow:0 0 20px rgba(0,200,255,0.9),0 0 60px rgba(0,200,255,0.5),0 0 120px rgba(0,200,255,0.3),0 0 200px rgba(0,200,255,0.15);opacity:0;transform:translateY(20px) scale(0.95);transition:all 1.2s cubic-bezier(0.16,1,0.3,1);font-family:Georgia,'Noto Serif SC',serif;white-space:nowrap;">欢迎来到东方的赛博世界</div>
+				</div>
+				<div id="loader-sub" style="font-size:clamp(0.85rem,2.2vw,1.15rem);letter-spacing:0.5em;color:rgba(0,200,255,0.8);text-shadow:0 0 15px rgba(0,200,255,0.6);opacity:0;transition:all 1s ease;text-transform:uppercase;font-family:sans-serif;">CYBER WORLD LOADING...</div>
+				<div class="flex items-center gap-4" style="opacity:0;" id="loader-bottom">
+					<span id="loader-pct" class="font-mono" style="color:rgba(0,255,136,0.6);font-size:0.85rem;letter-spacing:0.1em;text-shadow:0 0 8px rgba(0,255,136,0.3);min-width:40px;text-align:right;">0%</span>
+					<div id="loader-data" class="flex gap-4 font-mono tracking-wider" style="color:rgba(0,200,255,0.35);font-size:0.7rem;">
+						<span>SYS::INIT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>NET::CONNECT</span><span style="color:rgba(0,200,255,0.15);">|</span><span>MEM::ALLOC</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Cyber Scanline Effect -->
 		<div class="scanline"></div>
 
@@ -154,6 +189,86 @@ const bannerOffset =
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
 	</body>
 </html>
+
+<script is:inline>
+(function() {
+  var isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+  if (isHome) {
+    var loader = document.getElementById('cyber-loader');
+    var canvas = document.getElementById('loader-canvas');
+    var ctx = canvas.getContext('2d');
+    document.body.style.overflow = 'hidden';
+    loader.style.display = 'flex';
+    var W, H, cols = [], fontSize = 14;
+    var pctEl = document.getElementById('loader-pct');
+    var barEl = document.getElementById('loader-bar');
+    var fillEl = document.getElementById('loader-fill');
+    var bottomEl = document.getElementById('loader-bottom');
+    var titleEl = document.getElementById('loader-title');
+    var subEl = document.getElementById('loader-sub');
+    var borderEl = document.getElementById('loader-border');
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var density = window.innerWidth < 600 ? 3 : 1;
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var c = Math.floor(W / fontSize);
+      while (cols.length < c) cols.push(Math.random() * H / fontSize | 0);
+      cols.length = c;
+    }
+    resize(); window.addEventListener('resize', resize);
+    var chars = '歡迎來到東方的賽博世界01アイウエオカキクケコ∞∑∂∫√'.split('');
+    var t = 0, phase = 0, loadPct = 0, done = false, lastPct = -1;
+    function draw() {
+      if (done) return;
+      t += 0.016;
+      ctx.fillStyle = 'rgba(5,5,16,0.04)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.font = fontSize + 'px monospace';
+      for (var i = 0; i < cols.length; i += density) {
+        var ch = chars[Math.random() * chars.length | 0];
+        var x = i * fontSize, y = cols[i] * fontSize;
+        if (y > -fontSize && y < H + fontSize) {
+          var a = 0.4 + Math.random() * 0.6;
+          ctx.fillStyle = 'rgba(0,255,136,' + a + ')';
+          ctx.fillText(ch, x, y);
+        }
+        if (y > H && Math.random() > 0.975) cols[i] = 0;
+        cols[i] += 0.5 + Math.random() * 0.5;
+      }
+      if (phase >= 1) {
+        loadPct = Math.min(100, loadPct + 1.2);
+        var p = Math.floor(loadPct);
+        if (p !== lastPct) { lastPct = p; pctEl.textContent = p + '%'; }
+      }
+      if (phase === 0 && t > 0.8) {
+        phase = 1;
+        barEl.style.opacity = '1';
+        fillEl.style.width = '100%';
+        bottomEl.style.opacity = '1';
+      }
+      if (phase === 1 && t > 2.2) {
+        phase = 2;
+        titleEl.style.opacity = '1';
+        titleEl.style.transform = 'translateY(0) scale(1)';
+        subEl.style.opacity = '1';
+        borderEl.style.opacity = '1';
+      }
+      if (phase === 2 && t > 5.5) {
+        phase = 3;
+        done = true;
+        loader.style.transition = 'opacity 1.2s ease';
+        loader.style.opacity = '0';
+        setTimeout(function() { loader.style.display = 'none'; loader.style.pointerEvents = 'none'; document.body.style.overflow = ''; }, 1200);
+      }
+      if (!done) requestAnimationFrame(draw);
+    }
+    draw();
+  }
+})();
+</script>
 
 <script is:inline>
 (function() {
@@ -305,6 +420,7 @@ const bannerOffset =
 	'banner-height-home': `${BANNER_HEIGHT_HOME}vh`,
 	'banner-height': `${BANNER_HEIGHT}vh`,
 }}>
+@keyframes loaderScanShift{from{transform:translateY(0)}to{transform:translateY(4px)}}
 @tailwind components;
 @layer components {
 	.enable-banner.is-home #banner-wrapper {
