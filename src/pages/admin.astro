@@ -1358,17 +1358,26 @@ import Layout from "../layouts/Layout.astro";
   // ========== Music Management ==========
   let musicData = [];
 
+  let musicApiAvailable = false;
+
   async function loadMusicTab() {
     try {
       const r = await fetch('/api/music', { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
-      if (r.ok) { const d = await r.json(); musicData = d.data || []; }
+      if (r.ok) { const d = await r.json(); musicData = d.data || []; musicApiAvailable = true; }
     } catch {}
+    if (!musicData.length) {
+      try {
+        const r = await fetch('/data/music.json');
+        if (r.ok) { musicData = await r.json(); }
+      } catch {}
+    }
     renderMusicList();
 
     // Upload area
     const uploadArea = document.getElementById('music-upload-area');
     const fileInput = document.getElementById('music-file');
-    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('click', (e) => { if (e.target === fileInput) return; fileInput.click(); });
+    fileInput.addEventListener('click', (e) => e.stopPropagation());
     uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
     uploadArea.addEventListener('drop', (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -1377,10 +1386,14 @@ import Layout from "../layouts/Layout.astro";
     fileInput.addEventListener('change', (e) => uploadMusicFiles(e.target.files));
 
     document.getElementById('save-music').addEventListener('click', async () => {
-      try {
-        await apiPost('music.json', musicData);
-        showToast('歌单已保存到服务器');
-      } catch (e) { showToast('保存失败: ' + e.message); }
+      if (musicApiAvailable) {
+        try {
+          await apiPost('music.json', musicData);
+          showToast('歌单已保存到服务器');
+        } catch (e) { showToast('保存失败: ' + e.message); }
+      } else {
+        showToast('本地模式无法保存，请导出后手动覆盖 music.json');
+      }
     });
   }
 
@@ -1406,25 +1419,38 @@ import Layout from "../layouts/Layout.astro";
 
   async function uploadMusicFiles(files) {
     if (!files || !files.length) return;
-    for (const f of files) {
-      const formData = new FormData();
-      formData.append('file', f);
-      formData.append('title', f.name.replace(/\.[^/.]+$/, '').split(' - ').pop() || f.name);
-      formData.append('artist', f.name.split(' - ')[0] || '未知');
-      try {
-        const r = await fetch('/api/music/upload', {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + AUTH_TOKEN },
-          body: formData,
+    if (musicApiAvailable) {
+      for (const f of files) {
+        const formData = new FormData();
+        formData.append('file', f);
+        formData.append('title', f.name.replace(/\.[^/.]+$/, '').split(' - ').pop() || f.name);
+        formData.append('artist', f.name.split(' - ')[0] || '未知');
+        try {
+          const r = await fetch('/api/music/upload', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + AUTH_TOKEN },
+            body: formData,
+          });
+          if (r.ok) {
+            const d = await r.json();
+            if (d.tracks) musicData.push(...d.tracks);
+          }
+        } catch (e) { showToast('上传失败: ' + e.message); }
+      }
+    } else {
+      for (const f of files) {
+        const name = f.name.replace(/\.[^/.]+$/, '');
+        const parts = name.split(' - ');
+        musicData.push({
+          id: crypto.randomUUID(),
+          title: parts[1] || name,
+          artist: parts[0] || '未知艺术家',
+          file: '/music/' + f.name,
         });
-        if (r.ok) {
-          const d = await r.json();
-          if (d.tracks) musicData.push(...d.tracks);
-        }
-      } catch (e) { showToast('上传失败: ' + e.message); }
+      }
+      showToast('已添加到本地列表，服务器模式下才能实际上传文件');
     }
     renderMusicList();
-    showToast('上传完成');
   }
 
   window._admin = window._admin || {};
