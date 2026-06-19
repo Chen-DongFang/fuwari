@@ -52,11 +52,14 @@ const config = profileConfig;
       if (data.social && data.social.length > 0) {
         const linksEl = document.getElementById('profile-links');
         if (!linksEl) return;
-        linksEl.innerHTML = data.social.map(item =>
-          '<a rel="me" aria-label="' + item.name + '" href="' + item.url + '" target="_blank" class="btn-regular rounded-lg h-10 gap-2 px-3 active:scale-90 hover:shadow-cyber-cyan" style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);">' +
-          item.name +
-          '</a>'
-        ).join('');
+        const existingLinks = linksEl.querySelectorAll('a[aria-label]');
+        existingLinks.forEach(a => {
+          const label = a.getAttribute('aria-label');
+          const match = data.social.find(s => s.name === label);
+          if (match) {
+            a.href = match.url;
+          }
+        });
       }
       if (data.profile) {
         if (data.profile.name) {
