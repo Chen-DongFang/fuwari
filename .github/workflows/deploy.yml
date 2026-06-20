@@ -36,6 +36,7 @@ jobs:
             --exclude='data/site-data.json' \
             --exclude='data/projects.json' \
             --exclude='data/music.json' \
+            --exclude='music/' \
             -e "ssh -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/yunxing.fun/
