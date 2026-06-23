@@ -6,11 +6,17 @@ const crypto = require('crypto');
 const PORT = 3001;
 const API_DIR = '/var/www/blog-api';
 const SITE_DIR = '/var/www/yunxing.fun';
-const AUTH_TOKEN = 'admin.Aa@314159';
+const ADMIN_USER = process.env.BLOG_ADMIN_USER || 'admin';
+const ADMIN_PASS = process.env.BLOG_ADMIN_PASS || 'cyh18216953204';
 const COMMENTS_DIR = path.join(API_DIR, 'comments');
 const RATE_LIMIT_FILE = path.join(COMMENTS_DIR, '_ratelimit.json');
 const VISITORS_FILE = path.join(API_DIR, 'data', 'visitors.json');
+const LOGIN_RATE_FILE = path.join(API_DIR, 'data', '_login_ratelimit.json');
 const MAX_COMMENTS_PER_DAY = 10;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
+
+const sessions = new Map();
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -34,7 +40,8 @@ function send(res, status, data) {
 
 function checkAuth(req) {
   const auth = req.headers.authorization;
-  return auth === `Bearer ${AUTH_TOKEN}`;
+  if (!auth || !auth.startsWith('Bearer ')) return false;
+  return validateSession(auth.slice(7));
 }
 
 function sanitize(str) {
@@ -101,6 +108,44 @@ function checkRateLimit(ip) {
   return true;
 }
 
+function loadLoginRateLimit() {
+  try { if (fs.existsSync(LOGIN_RATE_FILE)) return JSON.parse(fs.readFileSync(LOGIN_RATE_FILE, 'utf-8')); } catch {}
+  return {};
+}
+function saveLoginRateLimit(data) {
+  const dir = path.dirname(LOGIN_RATE_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(LOGIN_RATE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+function checkLoginRateLimit(ip) {
+  const now = Date.now();
+  const data = loadLoginRateLimit();
+  if (!data[ip]) data[ip] = { attempts: 0, lockedUntil: 0 };
+  const entry = data[ip];
+  if (entry.lockedUntil > now) { saveLoginRateLimit(data); return false; }
+  if (entry.lockedUntil > 0 && entry.lockedUntil <= now) { entry.attempts = 0; entry.lockedUntil = 0; }
+  entry.attempts++;
+  if (entry.attempts >= MAX_LOGIN_ATTEMPTS) { entry.lockedUntil = now + LOGIN_LOCKOUT_MS; saveLoginRateLimit(data); return false; }
+  saveLoginRateLimit(data);
+  return true;
+}
+function resetLoginAttempts(ip) {
+  const data = loadLoginRateLimit();
+  if (data[ip]) { data[ip] = { attempts: 0, lockedUntil: 0 }; saveLoginRateLimit(data); }
+}
+
+function createSession() {
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions.set(token, { createdAt: Date.now() });
+  return token;
+}
+function validateSession(token) {
+  if (!token || !sessions.has(token)) return false;
+  const session = sessions.get(token);
+  if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) { sessions.delete(token); return false; }
+  return true;
+}
+
 const MUSIC_DIR = path.join(SITE_DIR, 'music');
 const MUSIC_JSON = path.join(API_DIR, 'data', 'music.json');
 
@@ -154,6 +199,24 @@ const server = http.createServer(async (req, res) => {
 
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = url.pathname;
+
+  // ========== Login API ==========
+  if (req.method === 'POST' && pathname === '/api/login') {
+    try {
+      const ip = getClientIP(req);
+      if (!checkLoginRateLimit(ip)) {
+        return send(res, 429, { error: '登录尝试次数过多，请15分钟后再试' });
+      }
+      const body = await parseBody(req);
+      if (body.username === ADMIN_USER && body.password === ADMIN_PASS) {
+        const token = createSession();
+        resetLoginAttempts(ip);
+        return send(res, 200, { ok: true, token });
+      }
+      return send(res, 401, { error: '账号或密码错误' });
+    } catch (e) { send(res, 500, { error: e.message }); }
+    return;
+  }
 
   // ========== Public Comment API (no auth) ==========
 

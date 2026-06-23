@@ -74,6 +74,10 @@ import Layout from "../layouts/Layout.astro";
       </nav>
       
       <div class="sidebar-footer">
+        <button id="logout-btn" class="back-link" style="background:none;border:none;width:100%;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);padding:0;margin-bottom:12px;text-align:left;display:flex;align-items:center;gap:8px;">
+          <span class="back-icon">⏻</span>
+          <span>退出登录</span>
+        </button>
         <a href="/" class="back-link">
           <span class="back-icon">←</span>
           <span>返回前台</span>
@@ -1047,11 +1051,8 @@ import Layout from "../layouts/Layout.astro";
 
 <script>
   // Login Gate
-  const ADMIN_USER = "admin";
-  const ADMIN_PASS = "Aa@314159";
-
   function checkLogin() {
-    return sessionStorage.getItem("admin_logged_in") === "true";
+    return !!sessionStorage.getItem("admin_token");
   }
 
   function showAdmin() {
@@ -1065,18 +1066,33 @@ import Layout from "../layouts/Layout.astro";
     const passInput = document.getElementById("login-pass");
     const errorEl = document.getElementById("login-error");
 
-    function doLogin() {
+    async function doLogin() {
       const u = userInput.value.trim();
       const p = passInput.value;
-      if (u === ADMIN_USER && p === ADMIN_PASS) {
-        sessionStorage.setItem("admin_logged_in", "true");
-        showAdmin();
-        init();
-      } else {
-        errorEl.textContent = "账号或密码错误";
-        passInput.value = "";
-        passInput.focus();
+      if (!u || !p) { errorEl.textContent = "请输入账号和密码"; return; }
+      loginBtn.disabled = true;
+      loginBtn.textContent = "登录中...";
+      try {
+        const r = await fetch(`${location.origin}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p }),
+        });
+        const data = await r.json();
+        if (r.ok && data.ok) {
+          sessionStorage.setItem("admin_token", data.token);
+          showAdmin();
+          init();
+        } else {
+          errorEl.textContent = data.error || "账号或密码错误";
+          passInput.value = "";
+          passInput.focus();
+        }
+      } catch (e) {
+        errorEl.textContent = "网络错误，请重试";
       }
+      loginBtn.disabled = false;
+      loginBtn.textContent = "登 录";
     }
 
     loginBtn.addEventListener("click", doLogin);
@@ -1092,36 +1108,41 @@ import Layout from "../layouts/Layout.astro";
     setupLogin();
   }
 
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    sessionStorage.removeItem("admin_token");
+    location.reload();
+  });
+
   // API Config
   const API_BASE = location.origin;
-  const AUTH_TOKEN = 'admin.Aa@314159';
+  function getAuthToken() { return sessionStorage.getItem("admin_token") || ""; }
   async function apiGet(filename) {
-    const r = await fetch(`${API_BASE}/api/data/${filename}`, { headers: { Authorization: `Bearer ${AUTH_TOKEN}` } });
-    if (!r.ok) throw new Error(`GET ${filename} failed`);
+    const r = await fetch(`${API_BASE}/api/data/${filename}`, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+    if (!r.ok) { if (r.status === 401) { sessionStorage.removeItem("admin_token"); location.reload(); } throw new Error(`GET ${filename} failed`); }
     return (await r.json()).data;
   }
   async function apiPost(filename, data) {
     const r = await fetch(`${API_BASE}/api/data/${filename}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${AUTH_TOKEN}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getAuthToken()}` },
       body: JSON.stringify(data),
     });
-    if (!r.ok) throw new Error(`POST ${filename} failed`);
+    if (!r.ok) { if (r.status === 401) { sessionStorage.removeItem("admin_token"); location.reload(); } throw new Error(`POST ${filename} failed`); }
     return await r.json();
   }
 
   async function apiDelete(path) {
     const r = await fetch(`${API_BASE}${path}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${AUTH_TOKEN}` },
+      headers: { Authorization: `Bearer ${getAuthToken()}` },
     });
-    if (!r.ok) throw new Error(`DELETE ${path} failed`);
+    if (!r.ok) { if (r.status === 401) { sessionStorage.removeItem("admin_token"); location.reload(); } throw new Error(`DELETE ${path} failed`); }
     return await r.json();
   }
 
   async function apiGetPath(path) {
-    const r = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${AUTH_TOKEN}` } });
-    if (!r.ok) throw new Error(`GET ${path} failed`);
+    const r = await fetch(`${API_BASE}${path}`, { headers: { Authorization: `Bearer ${getAuthToken()}` } });
+    if (!r.ok) { if (r.status === 401) { sessionStorage.removeItem("admin_token"); location.reload(); } throw new Error(`GET ${path} failed`); }
     return await r.json();
   }
 
@@ -1392,7 +1413,7 @@ import Layout from "../layouts/Layout.astro";
 
   async function loadMusicTab() {
     try {
-      const r = await fetch('/api/music', { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      const r = await fetch('/api/music', { headers: { Authorization: 'Bearer ' + getAuthToken() } });
       if (r.ok) { const d = await r.json(); musicData = d.data || []; musicApiAvailable = true; }
     } catch {}
     if (!musicData.length) {
@@ -1461,7 +1482,7 @@ import Layout from "../layouts/Layout.astro";
         try {
           const r = await fetch('/api/music/upload', {
             method: 'POST',
-            headers: { Authorization: 'Bearer ' + AUTH_TOKEN },
+            headers: { Authorization: 'Bearer ' + getAuthToken() },
             body: formData,
           });
           if (r.ok) {
@@ -1498,7 +1519,7 @@ import Layout from "../layouts/Layout.astro";
   window._admin.deleteMusic = async function(id) {
     if (!confirm('确定要删除这首音乐吗？')) return;
     try {
-      await fetch('/api/music/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      await fetch('/api/music/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + getAuthToken() } });
       musicData = musicData.filter(t => t.id !== id);
       renderMusicList();
       showToast('已删除');
@@ -1584,7 +1605,7 @@ import Layout from "../layouts/Layout.astro";
   async function fetchVisitorsPage() {
     try {
       const offset = (visitorsPage - 1) * VISITORS_PER_PAGE;
-      const r = await fetch('/api/visitor?limit=' + VISITORS_PER_PAGE + '&offset=' + offset, { headers: { Authorization: 'Bearer ' + AUTH_TOKEN } });
+      const r = await fetch('/api/visitor?limit=' + VISITORS_PER_PAGE + '&offset=' + offset, { headers: { Authorization: 'Bearer ' + getAuthToken() } });
       if (!r.ok) return;
       const d = await r.json();
       visitorsTotal = d.total || 0;
